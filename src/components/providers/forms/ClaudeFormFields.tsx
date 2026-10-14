@@ -152,6 +152,8 @@ interface ClaudeFormFieldsProps {
   // API Format (for Claude-compatible providers that need request/response conversion)
   apiFormat: ClaudeApiFormat;
   onApiFormatChange: (format: ClaudeApiFormat) => void;
+  omitResponsesReasoning: boolean;
+  onOmitResponsesReasoningChange: (enabled: boolean) => void;
 
   // Auth Field (ANTHROPIC_AUTH_TOKEN or ANTHROPIC_API_KEY)
   apiKeyField: ClaudeApiKeyField;
@@ -235,6 +237,8 @@ export function ClaudeFormFields({
   speedTestEndpoints,
   apiFormat,
   onApiFormatChange,
+  omitResponsesReasoning,
+  onOmitResponsesReasoningChange,
   apiKeyField,
   onApiKeyFieldChange,
   isFullUrl,
@@ -891,6 +895,25 @@ export function ClaudeFormFields({
                 </SelectItem>
               </SelectContent>
             </Select>
+            {apiFormat === "openai_responses" && (
+              <div className="space-y-2 rounded-md border p-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="omit-responses-reasoning"
+                    checked={omitResponsesReasoning}
+                    onCheckedChange={(checked) =>
+                      onOmitResponsesReasoningChange(checked === true)
+                    }
+                  />
+                  <FormLabel htmlFor="omit-responses-reasoning">
+                    {t("providerForm.omitResponsesReasoning")}
+                  </FormLabel>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("providerForm.omitResponsesReasoningHint")}
+                </p>
+              </div>
+            )}
             {directModeFormatNotice && apiFormat !== "anthropic" && (
               <DirectModeFormatWarning notice={directModeFormatNotice} />
             )}

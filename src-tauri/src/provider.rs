@@ -523,6 +523,13 @@ pub struct ProviderMeta {
     /// - "openai_responses": OpenAI Responses API 格式，需要转换
     #[serde(rename = "apiFormat", skip_serializing_if = "Option::is_none")]
     pub api_format: Option<String>,
+    /// Claude -> Responses only: explicitly omit replayed reasoning for gateways
+    /// that reject opaque reasoning history. Preserve it by default.
+    #[serde(
+        rename = "omitResponsesReasoning",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub omit_responses_reasoning: Option<bool>,
     /// Codex Copilot only: absent or auto prefers advertised Responses, then Chat.
     /// Legacy `apiFormat` does not imply an explicit Copilot protocol override.
     #[serde(

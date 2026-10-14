@@ -46,6 +46,7 @@ describe("Http400RetryConfigPanel", () => {
       expect(settingsApi.setHttp400RetryConfig).toHaveBeenCalledWith({
         enabled: true,
         maxRetries: 5,
+        diagnosticsEnabled: false,
       });
       expect(toast.success).toHaveBeenCalled();
     });
@@ -64,6 +65,7 @@ describe("Http400RetryConfigPanel", () => {
       expect(settingsApi.setHttp400RetryConfig).toHaveBeenCalledWith({
         enabled: false,
         maxRetries: 7,
+        diagnosticsEnabled: false,
       }),
     );
   });
@@ -91,6 +93,7 @@ describe("Http400RetryConfigPanel", () => {
       expect(settingsApi.setHttp400RetryConfig).toHaveBeenCalledWith({
         enabled: true,
         maxRetries,
+        diagnosticsEnabled: false,
       }),
     );
   });
@@ -119,7 +122,52 @@ describe("Http400RetryConfigPanel", () => {
     );
     render(<Http400RetryConfigPanel />);
     await screen.findByText(/database unavailable/);
-    expect(screen.getByRole("switch")).toBeDisabled();
+    expect(
+      screen.getByRole("switch", { name: "http400Retry.enabled" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("switch", { name: "http400Retry.diagnosticsEnabled" }),
+    ).toBeDisabled();
     expect(screen.getByRole("button", { name: "common.save" })).toBeDisabled();
+  });
+
+  it("saves diagnostics independently while automatic retries are disabled", async () => {
+    const retryToggle = await load();
+    const diagnostics = screen.getByRole("switch", {
+      name: "http400Retry.diagnosticsEnabled",
+    });
+    expect(retryToggle).not.toBeChecked();
+    expect(diagnostics).not.toBeChecked();
+    expect(diagnostics).toBeEnabled();
+    fireEvent.click(diagnostics);
+    fireEvent.click(screen.getByRole("button", { name: "common.save" }));
+    await waitFor(() =>
+      expect(settingsApi.setHttp400RetryConfig).toHaveBeenCalledWith({
+        enabled: false,
+        maxRetries: 3,
+        diagnosticsEnabled: true,
+      }),
+    );
+  });
+
+  it("loads and preserves an existing diagnostics setting", async () => {
+    vi.mocked(settingsApi.getHttp400RetryConfig).mockResolvedValue({
+      enabled: true,
+      maxRetries: 4,
+      diagnosticsEnabled: true,
+    });
+    const retryToggle = await load();
+    expect(
+      screen.getByRole("switch", { name: "http400Retry.diagnosticsEnabled" }),
+    ).toBeChecked();
+    fireEvent.click(retryToggle);
+    fireEvent.click(screen.getByRole("button", { name: "common.save" }));
+    await waitFor(() =>
+      expect(settingsApi.setHttp400RetryConfig).toHaveBeenCalledWith({
+        enabled: false,
+        maxRetries: 4,
+        diagnosticsEnabled: true,
+      }),
+    );
   });
 });

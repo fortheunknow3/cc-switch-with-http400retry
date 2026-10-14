@@ -570,6 +570,9 @@ function ProviderFormFull({
     if (appId !== "claude") return "anthropic";
     return initialData?.meta?.apiFormat ?? "anthropic";
   });
+  const [omitResponsesReasoning, setOmitResponsesReasoning] = useState(
+    initialData?.meta?.omitResponsesReasoning ?? false,
+  );
 
   const handleApiFormatChange = useCallback((format: ClaudeApiFormat) => {
     setLocalApiFormat(format);
@@ -1959,6 +1962,13 @@ function ProviderFormFull({
         codexCopilotApiFormat !== "auto"
           ? codexCopilotApiFormat
           : undefined,
+      omitResponsesReasoning:
+        appId === "claude" &&
+        category !== "official" &&
+        localApiFormat === "openai_responses" &&
+        omitResponsesReasoning
+          ? true
+          : undefined,
       apiKeyField:
         appId === "claude" &&
         category !== "official" &&
@@ -2311,6 +2321,7 @@ function ProviderFormFull({
     }
 
     setLocalApiKeyField(preset.apiKeyField ?? "ANTHROPIC_AUTH_TOKEN");
+    setOmitResponsesReasoning(false);
     setLocalIsFullUrl(false);
 
     form.reset({
@@ -2614,6 +2625,8 @@ function ProviderFormFull({
               speedTestEndpoints={speedTestEndpoints}
               apiFormat={localApiFormat}
               onApiFormatChange={handleApiFormatChange}
+              omitResponsesReasoning={omitResponsesReasoning}
+              onOmitResponsesReasoningChange={setOmitResponsesReasoning}
               apiKeyField={localApiKeyField}
               onApiKeyFieldChange={handleApiKeyFieldChange}
               isFullUrl={localIsFullUrl}

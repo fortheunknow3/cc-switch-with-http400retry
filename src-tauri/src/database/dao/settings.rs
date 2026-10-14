@@ -361,11 +361,13 @@ mod http400_retry_tests {
         );
         let mut config = Http400RetryConfig {
             enabled: true,
+            diagnostics_enabled: false,
             max_retries: 7,
         };
         db.set_http400_retry_config(&config).unwrap();
         assert_eq!(db.get_http400_retry_config().unwrap(), config);
         config.enabled = false;
+        config.diagnostics_enabled = true;
         db.set_http400_retry_config(&config).unwrap();
         assert_eq!(db.get_http400_retry_config().unwrap(), config);
     }
@@ -377,6 +379,7 @@ mod http400_retry_tests {
             assert!(db
                 .set_http400_retry_config(&Http400RetryConfig {
                     enabled: true,
+                    diagnostics_enabled: false,
                     max_retries
                 })
                 .is_err());
@@ -393,5 +396,8 @@ mod http400_retry_tests {
         }
         let partial: Http400RetryConfig = serde_json::from_str("{}").unwrap();
         assert_eq!(partial, Http400RetryConfig::default());
+        let legacy: Http400RetryConfig =
+            serde_json::from_str(r#"{"enabled":true,"maxRetries":10}"#).unwrap();
+        assert!(!legacy.diagnostics_enabled);
     }
 }

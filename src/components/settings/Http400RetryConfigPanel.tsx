@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 export function Http400RetryConfigPanel() {
   const { t } = useTranslation();
   const [enabled, setEnabled] = useState(false);
+  const [diagnosticsEnabled, setDiagnosticsEnabled] = useState(false);
   const [maxRetries, setMaxRetries] = useState("3");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -24,6 +25,7 @@ export function Http400RetryConfigPanel() {
       .then((config) => {
         if (cancelled) return;
         setEnabled(config.enabled);
+        setDiagnosticsEnabled(config.diagnosticsEnabled ?? false);
         setMaxRetries(String(config.maxRetries));
       })
       .catch((error) => {
@@ -50,7 +52,11 @@ export function Http400RetryConfigPanel() {
     }
     setIsSaving(true);
     try {
-      await settingsApi.setHttp400RetryConfig({ enabled, maxRetries: value });
+      await settingsApi.setHttp400RetryConfig({
+        enabled,
+        maxRetries: value,
+        diagnosticsEnabled,
+      });
       toast.success(t("http400Retry.saved"));
     } catch (error) {
       toast.error(`${t("http400Retry.saveFailed")}: ${String(error)}`);
@@ -100,6 +106,23 @@ export function Http400RetryConfigPanel() {
         />
         <p id="http400-retry-hint" className="text-xs text-fg-2">
           {t("http400Retry.hint")}
+        </p>
+      </div>
+      <div className="space-y-2 border-t border-border pt-4">
+        <div className="flex items-center justify-between gap-4">
+          <Label htmlFor="http400-diagnostics-enabled">
+            {t("http400Retry.diagnosticsEnabled")}
+          </Label>
+          <Switch
+            id="http400-diagnostics-enabled"
+            checked={diagnosticsEnabled}
+            onCheckedChange={setDiagnosticsEnabled}
+            disabled={disabled}
+            aria-describedby="http400-diagnostics-hint"
+          />
+        </div>
+        <p id="http400-diagnostics-hint" className="text-xs text-fg-2">
+          {t("http400Retry.diagnosticsHint")}
         </p>
       </div>
       <div className="flex justify-end">

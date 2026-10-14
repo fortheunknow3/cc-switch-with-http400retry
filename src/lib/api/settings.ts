@@ -402,6 +402,7 @@ export interface ToolInstallationReport {
 export interface Http400RetryConfig {
   enabled: boolean;
   maxRetries: number;
+  diagnosticsEnabled?: boolean;
 }
 
 export interface RectifierConfig {

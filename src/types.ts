@@ -200,6 +200,8 @@ export interface ProviderMeta {
     | "openai_chat"
     | "openai_responses"
     | "gemini_native";
+  // Claude -> Responses: omit historical reasoning only when explicitly enabled.
+  omitResponsesReasoning?: boolean;
   // Managed Codex Copilot uses this instead of apiFormat. Missing/unknown means auto.
   // Keep the raw string so selections from newer versions survive an edit/save.
   codexCopilotApiFormat?: string;

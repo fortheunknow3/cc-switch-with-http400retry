@@ -1,5 +1,7 @@
 {
   "http400Retry": {
+    "diagnosticsEnabled": "請求轉換診斷日誌",
+    "diagnosticsHint": "獨立於自動重試。記錄 Anthropic → OpenAI Responses 請求的模型、預算、大小、呼叫配對與上游 trace ID，省略對話、工具參數及金鑰。需啟用日誌並使用 Info 或更詳細層級；儲存後對新請求生效。",
     "title": "HTTP 400 自動重試",
     "enabled": "啟用 HTTP 400 自動重試",
     "description": "適用於本機路由模式的所有應用程式。收到 HTTP 400 時，等待後向同一供應商重新傳送請求，等待間隔逐步增加至最多 5 秒。儲存後對新請求生效。",
@@ -1669,6 +1671,8 @@
     "apiFormatAnthropic": "Anthropic Messages (原生)",
     "apiFormatOpenAIChat": "OpenAI Chat Completions (需開啟路由)",
     "apiFormatOpenAIResponses": "OpenAI Responses API (需開啟路由)",
+    "omitResponsesReasoning": "省略歷史 reasoning（相容模式）",
+    "omitResponsesReasoningHint": "僅作用於目前供應商的 Responses 路由。省略歷史加密 reasoning，保留正文與工具呼叫；用於排查回傳 reasoning 後的 HTTP 400。",
     "apiFormatGeminiNative": "Gemini Native generateContent (需開啟路由)",
     "codexApiFormatResponses": "OpenAI Responses API (原生)",
     "codexApiFormatOpenAIChat": "OpenAI Chat Completions (需開啟路由)",

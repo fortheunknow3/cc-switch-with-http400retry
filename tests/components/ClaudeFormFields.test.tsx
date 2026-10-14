@@ -90,6 +90,8 @@ const renderCopilotForm = (overrides: Partial<ClaudeFormFieldsProps> = {}) => {
     speedTestEndpoints: [],
     apiFormat: "anthropic",
     onApiFormatChange: vi.fn(),
+    omitResponsesReasoning: false,
+    onOmitResponsesReasoningChange: vi.fn(),
     apiKeyField: "ANTHROPIC_AUTH_TOKEN",
     onApiKeyFieldChange: vi.fn(),
     isFullUrl: false,
@@ -122,6 +124,32 @@ const renderCodexOauthForm = (overrides: Partial<ClaudeFormFieldsProps> = {}) =>
   });
 
 describe("ClaudeFormFields", () => {
+  it("shows the opt-in reasoning compatibility control for Responses only", () => {
+    const onChange = vi.fn();
+    renderCopilotForm({
+      category: "third_party",
+      isCopilotPreset: false,
+      usesOAuth: false,
+      apiFormat: "openai_responses",
+      onOmitResponsesReasoningChange: onChange,
+    });
+    const control = screen.getByRole("checkbox", {
+      name: "providerForm.omitResponsesReasoning",
+    });
+    expect(control).not.toBeChecked();
+    fireEvent.click(control);
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
+
+  it("hides reasoning compatibility for the native protocol", () => {
+    renderCopilotForm({ category: "third_party", isCopilotPreset: false });
+    expect(
+      screen.queryByRole("checkbox", {
+        name: "providerForm.omitResponsesReasoning",
+      }),
+    ).toBeNull();
+  });
+
   beforeEach(() => {
     copilotApiMock.copilotGetModels.mockResolvedValue([]);
     copilotApiMock.copilotGetModelsForAccount.mockResolvedValue([]);

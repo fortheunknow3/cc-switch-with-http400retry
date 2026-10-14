@@ -1772,11 +1772,25 @@ fn responses_web_search_call_from_anthropic_blocks(
 /// 以便在无服务端状态下保持多轮 reasoning 上下文。
 /// `codex_fast_mode`: 仅在 `is_codex_oauth` 为 true 时生效，控制是否注入
 /// `service_tier = "priority"`。
+#[cfg(test)]
 pub fn anthropic_to_responses(
     body: Value,
     cache_key: Option<&str>,
     is_codex_oauth: bool,
     codex_fast_mode: bool,
+) -> Result<Value, ProxyError> {
+    anthropic_to_responses_with_options(body, cache_key, is_codex_oauth, codex_fast_mode, false)
+}
+
+/// Same conversion with explicit control over the DeepSeek-style reasoning
+/// compatibility path. `anthropic_to_responses` keeps the historic behaviour
+/// (no placeholder injection) for tests.
+pub fn anthropic_to_responses_with_options(
+    body: Value,
+    cache_key: Option<&str>,
+    is_codex_oauth: bool,
+    codex_fast_mode: bool,
+    ensure_tool_turn_reasoning: bool,
 ) -> Result<Value, ProxyError> {
     let mut result = json!({});
 
@@ -1806,7 +1820,7 @@ pub fn anthropic_to_responses(
 
     // messages → input
     if let Some(msgs) = body.get("messages").and_then(|m| m.as_array()) {
-        let input = convert_messages_to_input(msgs)?;
+        let input = convert_messages_to_input(msgs, ensure_tool_turn_reasoning)?;
         result["input"] = json!(input);
     }
 
@@ -2299,13 +2313,31 @@ pub(crate) fn build_anthropic_usage_from_responses(usage: Option<&Value>) -> Val
 /// - hosted WebSearch call/result blocks → restore one Responses web_search_call item
 /// - bridge-owned thinking blocks → restore the original Responses reasoning item
 /// - unrelated native thinking blocks → 丢弃
-fn convert_messages_to_input(messages: &[Value]) -> Result<Vec<Value>, ProxyError> {
+fn convert_messages_to_input(
+    messages: &[Value],
+    ensure_tool_turn_reasoning: bool,
+) -> Result<Vec<Value>, ProxyError> {
     let mut input = Vec::new();
+    // Start index and reasoning presence for every assistant turn that emitted
+    // at least one tool call, in message order.
+    let mut tool_turn_starts: Vec<(usize, bool)> = Vec::new();
+    // End index of the last "real" user message (one that carries something
+    // other than tool results). DeepSeek-style gateways only validate tool
+    // generations after that boundary.
+    let mut last_real_user_end = 0usize;
 
     for msg in messages {
         let role = msg.get("role").and_then(|r| r.as_str()).unwrap_or("user");
         let content = msg.get("content");
         let message_input_start = input.len();
+        let is_real_user_message = role == "user"
+            && match content {
+                Some(Value::String(_)) => true,
+                Some(Value::Array(blocks)) => blocks
+                    .iter()
+                    .any(|block| block.get("type").and_then(Value::as_str) != Some("tool_result")),
+                _ => false,
+            };
 
         match content {
             // 字符串内容
@@ -2483,6 +2515,10 @@ fn convert_messages_to_input(messages: &[Value]) -> Result<Vec<Value>, ProxyErro
             }
         }
 
+        if is_real_user_message {
+            last_real_user_end = input.len();
+        }
+
         // A replayed reasoning item is only valid when the same assistant
         // generation also contains a following message/function call item.
         // Reasoning-only incomplete turns otherwise brick the next request with
@@ -2503,6 +2539,53 @@ fn convert_messages_to_input(messages: &[Value]) -> Result<Vec<Value>, ProxyErro
                     has_generated_follower = true;
                 }
             }
+
+            let span_end = input.len();
+            if span_end > message_input_start {
+                let mut has_tool_call = false;
+                let mut has_reasoning = false;
+                for item in &input[message_input_start..span_end] {
+                    match item.get("type").and_then(Value::as_str) {
+                        Some("reasoning") => has_reasoning = true,
+                        Some("function_call" | "custom_tool_call" | "web_search_call") => {
+                            has_tool_call = true;
+                        }
+                        _ => {}
+                    }
+                }
+                if has_tool_call {
+                    tool_turn_starts.push((message_input_start, has_reasoning));
+                }
+            }
+        }
+    }
+
+    // DeepSeek-style gateways reject a request when any tool-call generation
+    // after the last real user message carries no reasoning item
+    // ("reasoning_content must be passed back"); generations earlier in the
+    // history may omit it. Clients cannot always replay one (a turn without a
+    // thinking block has no signature to carry), so mirror the Chat-Completions
+    // path and inject a summary-only placeholder before every reasoning-less
+    // generation in that window.
+    if ensure_tool_turn_reasoning {
+        let mut inserted = 0usize;
+        for (start, has_reasoning) in tool_turn_starts.iter().rev() {
+            if *start >= last_real_user_end && !*has_reasoning {
+                input.insert(
+                    *start,
+                    json!({
+                        "type": "reasoning",
+                        "id": "rs_ccswitch_placeholder",
+                        "summary": [{ "type": "summary_text", "text": "tool call" }]
+                    }),
+                );
+                inserted += 1;
+            }
+        }
+        if inserted > 0 {
+            log::info!(
+                "[RESPONSES-REASONING-PLACEHOLDER] inserted {inserted} summary placeholder(s) after the last user message"
+            );
         }
     }
 
@@ -2824,6 +2907,186 @@ pub(crate) fn responses_to_anthropic_with_web_search_options(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reasoning_placeholder_fills_every_generation_after_the_last_user_message() {
+        let input = json!({
+            "model": "deepseek/deepseek-v4.1-flash",
+            "max_tokens": 64,
+            "messages": [
+                {"role": "user", "content": "hi"},
+                {"role": "assistant", "content": [
+                    {"type": "text", "text": "first"},
+                    {"type": "tool_use", "id": "call_1", "name": "Bash", "input": {"command": "ls"}}
+                ]},
+                {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "call_1", "content": "ok"}]},
+                {"role": "assistant", "content": [
+                    {"type": "text", "text": "second"},
+                    {"type": "tool_use", "id": "call_2", "name": "Bash", "input": {"command": "pwd"}}
+                ]},
+                {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "call_2", "content": "ok2"}]}
+            ]
+        });
+
+        let disabled = anthropic_to_responses(input.clone(), None, false, false).unwrap();
+        assert_eq!(
+            disabled["input"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|item| item["type"] == "reasoning")
+                .count(),
+            0
+        );
+
+        let enabled = anthropic_to_responses_with_options(input, None, false, false, true).unwrap();
+        let items = enabled["input"].as_array().unwrap();
+        let placeholders: Vec<usize> = items
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| {
+                item["type"] == "reasoning" && item["id"] == "rs_ccswitch_placeholder"
+            })
+            .map(|(index, _)| index)
+            .collect();
+        assert_eq!(placeholders.len(), 2);
+        for index in &placeholders {
+            assert_eq!(items[*index]["summary"][0]["text"], "tool call");
+            assert_eq!(items[*index + 1]["role"], "assistant");
+        }
+        let first_call = items
+            .iter()
+            .position(|item| item["call_id"] == "call_1")
+            .unwrap();
+        let newest_call = items
+            .iter()
+            .position(|item| item["call_id"] == "call_2")
+            .unwrap();
+        assert!(placeholders[0] + 1 < first_call);
+        assert!(placeholders[1] + 1 < newest_call);
+    }
+
+    #[test]
+    fn reasoning_placeholder_covers_earlier_window_generation_when_newest_has_reasoning() {
+        let bridged = anthropic_block_from_openai_reasoning_item(&json!({
+            "type": "reasoning",
+            "id": "rs_1",
+            "summary": [],
+            "encrypted_content": "opaque"
+        }))
+        .expect("bridged thinking block");
+        let input = json!({
+            "model": "deepseek/deepseek-v4.1-flash",
+            "max_tokens": 64,
+            "messages": [
+                {"role": "user", "content": "hi"},
+                {"role": "assistant", "content": [
+                    {"type": "text", "text": "first"},
+                    {"type": "tool_use", "id": "call_1", "name": "Bash", "input": {"command": "ls"}}
+                ]},
+                {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "call_1", "content": "ok"}]},
+                {"role": "assistant", "content": [
+                    bridged,
+                    {"type": "text", "text": "second"},
+                    {"type": "tool_use", "id": "call_2", "name": "Bash", "input": {"command": "pwd"}}
+                ]},
+                {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "call_2", "content": "ok2"}]}
+            ]
+        });
+
+        let enabled = anthropic_to_responses_with_options(input, None, false, false, true).unwrap();
+        let items = enabled["input"].as_array().unwrap();
+        let placeholder_indices: Vec<usize> = items
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item["id"] == "rs_ccswitch_placeholder")
+            .map(|(index, _)| index)
+            .collect();
+        assert_eq!(
+            placeholder_indices.len(),
+            1,
+            "only the first generation lacks reasoning"
+        );
+        let first_call = items
+            .iter()
+            .position(|item| item["call_id"] == "call_1")
+            .unwrap();
+        let newest_call = items
+            .iter()
+            .position(|item| item["call_id"] == "call_2")
+            .unwrap();
+        assert!(placeholder_indices[0] < first_call);
+        assert!(items
+            .iter()
+            .any(|item| item["encrypted_content"] == "opaque"));
+        assert!(first_call < newest_call);
+    }
+
+    #[test]
+    fn reasoning_placeholder_is_skipped_when_a_trailing_user_message_clears_the_window() {
+        let input = json!({
+            "model": "deepseek/deepseek-v4.1-flash",
+            "max_tokens": 64,
+            "messages": [
+                {"role": "user", "content": "hi"},
+                {"role": "assistant", "content": [
+                    {"type": "text", "text": "first"},
+                    {"type": "tool_use", "id": "call_1", "name": "Bash", "input": {"command": "ls"}}
+                ]},
+                {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "call_1", "content": "ok"}]},
+                {"role": "user", "content": "continue"}
+            ]
+        });
+
+        let enabled = anthropic_to_responses_with_options(input, None, false, false, true).unwrap();
+        let items = enabled["input"].as_array().unwrap();
+        assert_eq!(
+            items
+                .iter()
+                .filter(|item| item["type"] == "reasoning")
+                .count(),
+            0
+        );
+    }
+
+    #[test]
+    fn reasoning_placeholder_is_skipped_when_the_newest_tool_turn_replays_reasoning() {
+        let bridged = anthropic_block_from_openai_reasoning_item(&json!({
+            "type": "reasoning",
+            "id": "rs_1",
+            "summary": [],
+            "encrypted_content": "opaque"
+        }))
+        .expect("bridged thinking block");
+        let input = json!({
+            "model": "deepseek/deepseek-v4.1-flash",
+            "max_tokens": 64,
+            "messages": [
+                {"role": "assistant", "content": [
+                    bridged,
+                    {"type": "text", "text": "run"},
+                    {"type": "tool_use", "id": "call_9", "name": "Bash", "input": {}}
+                ]},
+                {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "call_9", "content": "ok"}]}
+            ]
+        });
+
+        let result = anthropic_to_responses_with_options(input, None, false, false, true).unwrap();
+        let items = result["input"].as_array().unwrap();
+        assert_eq!(
+            items
+                .iter()
+                .filter(|item| item["type"] == "reasoning")
+                .count(),
+            1
+        );
+        assert!(items
+            .iter()
+            .any(|item| item["encrypted_content"] == "opaque"));
+        assert!(!items
+            .iter()
+            .any(|item| item["id"] == "rs_ccswitch_placeholder"));
+    }
 
     #[test]
     fn test_text_with_url_citations_preserves_unicode_character_ranges() {

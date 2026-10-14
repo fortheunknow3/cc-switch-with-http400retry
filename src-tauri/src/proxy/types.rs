@@ -191,6 +191,8 @@ pub struct AppProxyConfig {
 #[serde(rename_all = "camelCase", default)]
 pub struct Http400RetryConfig {
     pub enabled: bool,
+    /// 独立开关：记录 Anthropic → Responses 的脱敏请求结构和结果。
+    pub diagnostics_enabled: bool,
     /// 每个客户端请求允许的额外重试次数，不包含首次请求或整流器修复。
     pub max_retries: u32,
 }
@@ -211,6 +213,7 @@ impl Default for Http400RetryConfig {
         Self {
             enabled: false,
             max_retries: 3,
+            diagnostics_enabled: false,
         }
     }
 }

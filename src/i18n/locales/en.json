@@ -1,5 +1,7 @@
 {
   "http400Retry": {
+    "diagnosticsEnabled": "Request conversion diagnostics",
+    "diagnosticsHint": "Independent of automatic retries. Logs models, budgets, sizes, call pairing and upstream trace IDs for Anthropic → OpenAI Responses requests, omitting conversations, tool arguments and credentials. Enable logging at Info or a more detailed level. Saved changes apply to new requests.",
     "title": "HTTP 400 auto retry",
     "enabled": "Enable HTTP 400 auto retry",
     "description": "Applies to all apps in local Routing mode. Resends requests to the same provider after HTTP 400, with increasing delays up to 5 seconds. Saved changes apply to new requests.",
@@ -1668,6 +1670,8 @@
     "apiFormatAnthropic": "Anthropic Messages (Native)",
     "apiFormatOpenAIChat": "OpenAI Chat Completions (Requires routing)",
     "apiFormatOpenAIResponses": "OpenAI Responses API (Requires routing)",
+    "omitResponsesReasoning": "Omit historical reasoning (compatibility)",
+    "omitResponsesReasoningHint": "Applies only to this provider’s Responses routing. Omits encrypted reasoning history while keeping messages and tool calls; use to investigate HTTP 400 errors during reasoning replay.",
     "apiFormatGeminiNative": "Gemini Native generateContent (Requires routing)",
     "codexApiFormatResponses": "OpenAI Responses API (Native)",
     "codexApiFormatOpenAIChat": "OpenAI Chat Completions (Requires routing)",

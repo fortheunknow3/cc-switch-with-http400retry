@@ -1,5 +1,7 @@
 {
   "http400Retry": {
+    "diagnosticsEnabled": "リクエスト変換の診断ログ",
+    "diagnosticsHint": "自動再試行とは独立しています。Anthropic → OpenAI Responses のモデル、出力上限、サイズ、ツール呼び出しの対応、上流の trace ID を記録します。会話、ツール引数、認証情報は含めません。ログを Info 以上の詳細度で有効にしてください。保存後の新しいリクエストに反映されます。",
     "title": "HTTP 400 自動再試行",
     "enabled": "HTTP 400 自動再試行を有効にする",
     "description": "ローカルルーティングモードのすべてのアプリに適用されます。HTTP 400 を受信すると、最大 5 秒まで待機時間を増やしながら同じプロバイダーに再送信します。保存後の新しいリクエストに反映されます。",
@@ -1668,6 +1670,8 @@
     "apiFormatAnthropic": "Anthropic Messages（ネイティブ）",
     "apiFormatOpenAIChat": "OpenAI Chat Completions（ルーティングが必要）",
     "apiFormatOpenAIResponses": "OpenAI Responses API（ルーティングが必要）",
+    "omitResponsesReasoning": "過去の reasoning を省略（互換モード）",
+    "omitResponsesReasoningHint": "このプロバイダーの Responses ルーティングにのみ適用します。本文とツール呼び出しを保持し、暗号化された reasoning 履歴を省略して、再送時の HTTP 400 を調査します。",
     "apiFormatGeminiNative": "Gemini Native generateContent（ルーティングが必要）",
     "codexApiFormatResponses": "OpenAI Responses API（ネイティブ）",
     "codexApiFormatOpenAIChat": "OpenAI Chat Completions（ルーティングが必要）",

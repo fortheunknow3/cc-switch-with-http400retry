@@ -310,7 +310,9 @@ fn normalize_anthropic_tool_thinking_history(body: &mut Value) -> bool {
     changed
 }
 
-fn should_preserve_reasoning_content_for_openai_chat(provider: &Provider, body: &Value) -> bool {
+/// True when the request targets a vendor whose thinking-mode tool loops need
+/// the reasoning payload echoed back on every tool turn (DeepSeek / MiMo).
+fn is_reasoning_vendor(provider: &Provider, body: &Value) -> bool {
     if body
         .get("model")
         .and_then(|m| m.as_str())
@@ -334,6 +336,10 @@ fn should_preserve_reasoning_content_for_openai_chat(provider: &Provider, body: 
         .into_iter()
         .flatten()
         .any(is_reasoning_vendor_identifier)
+}
+
+fn should_preserve_reasoning_content_for_openai_chat(provider: &Provider, body: &Value) -> bool {
+    is_reasoning_vendor(provider, body)
 }
 
 pub fn transform_claude_request_for_api_format(
@@ -398,12 +404,35 @@ pub fn transform_claude_request_for_api_format(
             // Codex OAuth (ChatGPT Plus/Pro 反代) 需要在请求体里强制 store: false
             // + include: ["reasoning.encrypted_content"]，由 transform 层统一处理。
             let codex_fast_mode = provider.codex_fast_mode_enabled();
-            let mut result = super::transform_responses::anthropic_to_responses(
+            // DeepSeek-style vendored models need the newest tool-call turn to
+            // replay a reasoning item; see transform_responses::convert_messages_to_input.
+            let ensure_tool_turn_reasoning = is_reasoning_vendor(provider, &body);
+            let mut result = super::transform_responses::anthropic_to_responses_with_options(
                 body,
                 cache_key,
                 is_codex_oauth,
                 codex_fast_mode,
+                ensure_tool_turn_reasoning,
             )?;
+            if provider
+                .meta
+                .as_ref()
+                .and_then(|meta| meta.omit_responses_reasoning)
+                == Some(true)
+            {
+                if let Some(input) = result.get_mut("input").and_then(Value::as_array_mut) {
+                    let before = input.len();
+                    input.retain(|item| {
+                        item.get("type").and_then(Value::as_str) != Some("reasoning")
+                    });
+                    let omitted = before - input.len();
+                    if omitted > 0 {
+                        log::info!(
+                            "[RESPONSES-REASONING-COMPAT] omitted_reasoning_items={omitted}"
+                        );
+                    }
+                }
+            }
             if provider.is_xai_oauth() {
                 const REASONING_MARKER: &str = "reasoning.encrypted_content";
                 let mut include = result
@@ -1802,6 +1831,157 @@ mod tests {
 
         // GitHub Copilot always needs transform
         assert!(adapter.needs_transform(&copilot));
+    }
+
+    #[test]
+    fn responses_reasoning_compatibility_removes_only_replayed_reasoning() {
+        use super::super::reasoning_bridge::anthropic_block_from_openai_reasoning_item;
+
+        let mut messages = vec![json!({"role": "user", "content": "continue"})];
+        for index in 0..80 {
+            let reasoning = json!({
+                "type": "reasoning",
+                "id": format!("rs_{index}"),
+                "summary": if index % 2 == 0 { json!([]) } else {
+                    json!([{"type": "summary_text", "text": "previous thought"}])
+                },
+                "encrypted_content": format!("opaque-{index}")
+            });
+            messages.push(json!({"role": "assistant", "content": [
+                anthropic_block_from_openai_reasoning_item(&reasoning).unwrap(),
+                {"type": "text", "text": "Checking the file."},
+                {"type": "tool_use", "id": format!("call_{index}"), "name": "read_file", "input": {"path": "example.txt"}}
+            ]}));
+            messages.push(json!({"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": format!("call_{index}"), "content": [{"type": "text", "text": "file contents"}]}
+            ]}));
+        }
+        let body = json!({
+            "model": "deepseek/deepseek-v4.1-flash", "system": "system instruction",
+            "max_tokens": 64000, "stream": true, "messages": messages,
+            "tools": [{"name": "read_file", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}}}]
+        });
+        let provider = create_provider(json!({}));
+        let baseline = transform_claude_request_for_api_format(
+            body.clone(),
+            &provider,
+            "openai_responses",
+            Some("session"),
+            None,
+        )
+        .unwrap();
+        assert_eq!(
+            baseline["input"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|item| item["type"] == "reasoning")
+                .count(),
+            80
+        );
+
+        let mut opted_in = provider.clone();
+        opted_in.meta = Some(ProviderMeta {
+            omit_responses_reasoning: Some(true),
+            ..Default::default()
+        });
+        let actual = transform_claude_request_for_api_format(
+            body,
+            &opted_in,
+            "openai_responses",
+            Some("session"),
+            None,
+        )
+        .unwrap();
+        let mut expected = baseline;
+        expected["input"]
+            .as_array_mut()
+            .unwrap()
+            .retain(|item| item["type"] != "reasoning");
+        assert_eq!(actual, expected);
+        let input = actual["input"].as_array().unwrap();
+        assert_eq!(
+            input
+                .iter()
+                .filter(|item| item["type"] == "function_call")
+                .count(),
+            80
+        );
+        assert_eq!(
+            input
+                .iter()
+                .filter(|item| item["type"] == "function_call_output")
+                .count(),
+            80
+        );
+        // The neighboring provider's default is unchanged.
+        assert!(provider.meta.is_none());
+    }
+
+    #[test]
+    fn responses_reasoning_compatibility_is_opt_in_and_format_scoped() {
+        use super::super::reasoning_bridge::anthropic_block_from_openai_reasoning_item;
+
+        let reasoning = anthropic_block_from_openai_reasoning_item(&json!({
+            "type": "reasoning", "id": "rs_1", "summary": [], "encrypted_content": "opaque"
+        }))
+        .unwrap();
+        let body = json!({"model": "example", "max_tokens": 128, "messages": [
+            {"role": "assistant", "content": [reasoning, {"type": "text", "text": "hello"}]},
+            {"role": "user", "content": "continue"}
+        ]});
+        let provider = create_provider(json!({}));
+        for format in ["openai_responses", "openai_chat", "anthropic"] {
+            let baseline = transform_claude_request_for_api_format(
+                body.clone(),
+                &provider,
+                format,
+                None,
+                None,
+            )
+            .unwrap();
+            for enabled in [false, true] {
+                let mut configured = provider.clone();
+                configured.meta = Some(ProviderMeta {
+                    omit_responses_reasoning: Some(enabled),
+                    ..Default::default()
+                });
+                let actual = transform_claude_request_for_api_format(
+                    body.clone(),
+                    &configured,
+                    format,
+                    None,
+                    None,
+                )
+                .unwrap();
+                if format != "openai_responses" || !enabled {
+                    assert_eq!(actual, baseline);
+                } else {
+                    assert_eq!(
+                        actual["input"].as_array().unwrap().len() + 1,
+                        baseline["input"].as_array().unwrap().len()
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn responses_reasoning_compatibility_metadata_roundtrips() {
+        let legacy: ProviderMeta =
+            serde_json::from_value(json!({"apiFormat": "openai_responses"})).unwrap();
+        assert_eq!(legacy.omit_responses_reasoning, None);
+        for enabled in [true, false] {
+            let meta: ProviderMeta = serde_json::from_value(json!({
+                "apiFormat": "openai_responses", "omitResponsesReasoning": enabled
+            }))
+            .unwrap();
+            assert_eq!(meta.omit_responses_reasoning, Some(enabled));
+            assert_eq!(
+                serde_json::to_value(meta).unwrap()["omitResponsesReasoning"],
+                enabled
+            );
+        }
     }
 
     #[test]

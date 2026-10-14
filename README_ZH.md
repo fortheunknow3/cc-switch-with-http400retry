@@ -31,6 +31,11 @@
 - 向同一供应商重发请求，等待间隔从 **0.5 秒** 逐步增加至最多 **5 秒**。
 - 供应商切换或请求修复不会重置 HTTP 400 重试额度；原有请求修复和故障转移的尝试独立计数。
 - 设置持久保存，对新请求生效。只有一个供应商、未开启自动故障转移时也可使用。
+- 同一设置卡片中新增独立的 **请求转换诊断日志** 开关。日志设为 **Info** 或更详细级别后，使用 `request_id` 和 `attempt` 关联 `[ROUTE-DIAG-REQUEST]` 与 `[ROUTE-DIAG-RESULT]`，对比实际出站模型、字节数、输出预算、工具调用配对、reasoning 数量、响应状态和 trace ID。摘要省略对话正文、工具参数及密钥，供应商和会话仅记录哈希引用。
+- `diagnostics_version: 2` 诊断摘要新增分字段规范化指纹、工具定义/参数模式指纹、有界的 input 前缀指纹，以及末尾 12 项的脱敏结构。对比 `components.tools` / `components.instructions` 和相同 `end` 位置的前缀指纹，可定位变化而不记录正文。尾部调用/结果索引对应完整 input 数组；历史工具不在当前定义中仅作为上下文提示，不直接判定协议错误。
+- DeepSeek/MiMo 系网关要求最后一条用户消息之后的每一轮工具调用都回传 `reasoning` 项。客户端无法提供时（该轮没有 thinking 块），Claude → OpenAI Responses 转换会在这些轮次前各插入一个只含 summary 的 `reasoning` 占位项，与 Chat Completions 路径的既有行为一致；窗口为空或不需要该行为的网关不受影响。
+- 如需离线复现网关兼容问题，可在开启「请求转换诊断日志」的同时，用环境变量 `CC_SWITCH_CAPTURE_RESPONSES_BODY=1` 启动。实际发往上游的 Anthropic → Responses 请求体会写入 `<CC Switch 配置目录>/logs/request-captures/`（最多保留最新 40 个），仅保存在本机；其中包含完整对话内容，分享前必须先脱敏。
+- 若网关拒绝回传的 Responses reasoning，可编辑对应的 Claude 供应商卡，在 **OpenAI Responses** 格式下开启 **省略历史 reasoning（兼容模式）**。此开关默认关闭，仅移除该供应商请求中回放的 `reasoning` 项，保留正文、工具调用与工具结果，不修改会话历史。注意 DeepSeek 系供应商恰好相反：工具回合必须回传 reasoning（或由转换层补占位），请保持此开关关闭。
 
 前端功能测试：`pnpm test:unit -- tests/components/Http400RetryConfigPanel.test.tsx`。后端功能测试：`cargo test --manifest-path src-tauri/Cargo.toml --lib http400`。运行后端测试前，请将 `CC_SWITCH_TEST_HOME` 设为临时目录以隔离个人配置。
 
