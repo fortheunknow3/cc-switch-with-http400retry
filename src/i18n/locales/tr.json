@@ -1,7 +1,5 @@
 {
   "http400Retry": {
-    "diagnosticsEnabled": "İstek dönüşümü tanılama günlükleri",
-    "diagnosticsHint": "Otomatik yeniden denemeden bağımsızdır. Anthropic → OpenAI Responses isteklerinin modelini, sınırlarını, boyutunu, araç çağrısı eşleşmelerini ve üst sunucu trace ID bilgisini kaydeder. Konuşmalar, araç bağımsız değişkenleri ve kimlik bilgileri kaydedilmez. Günlük düzeyini Info veya daha ayrıntılı bir düzeye ayarlayın. Yeni isteklere uygulanır.",
     "title": "HTTP 400 otomatik yeniden deneme",
     "enabled": "HTTP 400 otomatik yeniden denemeyi etkinleştir",
     "description": "Yerel yönlendirme modundaki tüm uygulamalar için geçerlidir. HTTP 400 yanıtından sonra aynı sağlayıcıya, 5 saniyeye kadar artan aralıklarla tekrar istek gönderir. Kaydedilen ayarlar yeni isteklere uygulanır.",
@@ -1646,8 +1644,6 @@
     "apiFormatAnthropic": "Anthropic Mesajlar (Yerel)",
     "apiFormatOpenAIChat": "OpenAI Sohbet Tamamlamaları (Yönlendirme gerektirir)",
     "apiFormatOpenAIResponses": "OpenAI Yanıtları API (Yönlendirme gerektirir)",
-    "omitResponsesReasoning": "Geçmiş reasoning öğelerini atla (uyumluluk)",
-    "omitResponsesReasoningHint": "Yalnızca bu sağlayıcının Responses yönlendirmesine uygulanır. İletileri ve araç çağrılarını koruyarak şifreli reasoning geçmişini atlar; geçmiş yeniden gönderildiğinde oluşan HTTP 400 hatalarını araştırmak için kullanın.",
     "apiFormatGeminiNative": "Gemini yerel generateContent (Yönlendirme gerekir)",
     "codexApiFormatResponses": "OpenAI Yanıtları API (Yerel)",
     "codexApiFormatOpenAIChat": "OpenAI Sohbet Tamamlamaları (Yönlendirme gerektirir)",

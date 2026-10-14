@@ -362,9 +362,6 @@ pub struct RequestForwarder {
     rectifier_config: RectifierConfig,
     /// 每个客户端请求共用一个 HTTP 400 重试预算，跨整流和故障转移不重置。
     http400_retry_config: Http400RetryConfig,
-    /// 本次客户端请求的诊断关联 ID，与每次上游尝试的序号配合使用。
-    diagnostic_request_id: uuid::Uuid,
-    diagnostic_attempt: std::sync::atomic::AtomicU32,
     /// 优化器配置
     optimizer_config: OptimizerConfig,
     /// Copilot 优化器配置
@@ -490,8 +487,6 @@ impl RequestForwarder {
             session_client_provided,
             rectifier_config,
             http400_retry_config: Http400RetryConfig::default(),
-            diagnostic_request_id: uuid::Uuid::new_v4(),
-            diagnostic_attempt: std::sync::atomic::AtomicU32::new(0),
             optimizer_config,
             copilot_optimizer_config,
             non_streaming_timeout: std::time::Duration::from_secs(non_streaming_timeout),
@@ -2806,41 +2801,6 @@ impl RequestForwarder {
             is_copilot,
         );
 
-        let diagnostic_attempt = (self.http400_retry_config.diagnostics_enabled
-            && needs_transform
-            && adapter.name() == "Claude"
-            && resolved_claude_api_format.as_deref() == Some("openai_responses"))
-        .then(|| {
-            let attempt = self
-                .diagnostic_attempt
-                .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-                + 1;
-            let summary = super::request_diagnostics::summarize_request(
-                body,
-                &filtered_body,
-                &body_bytes,
-                &provider.id,
-                &self.session_id,
-                &log_secrets,
-            );
-            log::info!(
-                "[ROUTE-DIAG-REQUEST] request_id={} attempt={} summary={}",
-                self.diagnostic_request_id,
-                attempt,
-                summary
-            );
-            if super::raw_capture::capture_enabled() {
-                super::raw_capture::capture_outbound_body(
-                    &self.diagnostic_request_id.to_string(),
-                    attempt,
-                    &body_bytes,
-                );
-            }
-            attempt
-        });
-        let diagnostic_started = std::time::Instant::now();
-        let mut diagnostic_headers = None;
-
         // 把发送及首包校验放在一个作用域中，让传输失败和 HTTP 2xx 内的协议错误
         // 也有与请求成对的诊断结果；不改变原来的错误传播或重试规则。
         let result = async {
@@ -2904,11 +2864,6 @@ impl RequestForwarder {
 
         // 检查响应状态
         let status = response.status();
-        if diagnostic_attempt.is_some() {
-            diagnostic_headers = Some(super::request_diagnostics::response_headers(
-                status.as_u16(), response.headers(), &log_secrets,
-            ));
-        }
 
         if status.is_success() {
             let mut response = self
@@ -2976,20 +2931,6 @@ impl RequestForwarder {
             })
         }
         }.await;
-        if let Some(attempt) = diagnostic_attempt {
-            let summary = super::request_diagnostics::response_outcome(
-                diagnostic_headers,
-                result.as_ref().err(),
-                diagnostic_started.elapsed().as_millis() as u64,
-                &log_secrets,
-            );
-            log::info!(
-                "[ROUTE-DIAG-RESULT] request_id={} attempt={} summary={}",
-                self.diagnostic_request_id,
-                attempt,
-                summary
-            );
-        }
         result
     }
 
@@ -4846,8 +4787,6 @@ mod tests {
             session_client_provided: false,
             rectifier_config: RectifierConfig::default(),
             http400_retry_config: Http400RetryConfig::default(),
-            diagnostic_request_id: uuid::Uuid::new_v4(),
-            diagnostic_attempt: std::sync::atomic::AtomicU32::new(0),
             optimizer_config: OptimizerConfig::default(),
             copilot_optimizer_config: CopilotOptimizerConfig::default(),
             non_streaming_timeout,
@@ -8235,76 +8174,10 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn request_diagnostics_capture_each_converted_retry_without_changing_payload() {
-            for diagnostics_enabled in [false, true] {
-                let response = (
-                    200,
-                    json!({
-                        "id":"resp_diag", "object":"response", "status":"completed",
-                        "model":"deepseek/test",
-                        "output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"ok","annotations":[]}]}],
-                        "usage":{"input_tokens":1,"output_tokens":1}
-                    }),
-                );
-                let up = upstream(vec![
-                    error(
-                        400,
-                        "invalid request trace_id: b9512282a39ae61eb0a2f14a36d5820e",
-                    ),
-                    response,
-                ])
-                .await;
-                let mut upstream_provider = provider("p1", &up);
-                upstream_provider
-                    .meta
-                    .get_or_insert_with(Default::default)
-                    .api_format = Some("openai_responses".into());
-                upstream_provider.settings_config["env"]["ANTHROPIC_MODEL"] =
-                    json!("deepseek/test[1M]");
-                let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
-                    enabled: true,
-                    diagnostics_enabled,
-                    max_retries: 1,
-                });
-                let result = send(&fwd, vec![upstream_provider], plain_body()).await;
-                assert!(result.is_ok());
-                let requests = up.requests.lock().await;
-                assert_eq!(requests.len(), 2);
-                assert_eq!(requests[0], requests[1]);
-                assert_eq!(requests[0]["model"], "deepseek/test");
-                assert!(requests[0].get("input").is_some());
-                assert!(requests[0].get("messages").is_none());
-                assert_eq!(
-                    fwd.diagnostic_attempt
-                        .load(std::sync::atomic::Ordering::Relaxed),
-                    if diagnostics_enabled { 2 } else { 0 }
-                );
-            }
-        }
-
-        #[tokio::test]
-        async fn request_diagnostics_skip_native_anthropic_requests() {
-            let up = upstream(vec![ok()]).await;
-            let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
-                diagnostics_enabled: true,
-                ..Http400RetryConfig::default()
-            });
-            assert!(send(&fwd, vec![provider("p1", &up)], plain_body())
-                .await
-                .is_ok());
-            assert_eq!(
-                fwd.diagnostic_attempt
-                    .load(std::sync::atomic::Ordering::Relaxed),
-                0
-            );
-        }
-
-        #[tokio::test]
         async fn http400_retry_succeeds_on_the_same_provider_and_counts_one_request() {
             let up = upstream(vec![error(400, "temporary rejection"), ok()]).await;
             let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
                 enabled: true,
-                diagnostics_enabled: false,
                 max_retries: 2,
             });
             let result = send(&fwd, vec![provider("p1", &up)], plain_body()).await;
@@ -8337,7 +8210,6 @@ mod tests {
             let unused = upstream(vec![]).await;
             let fwd = forwarder(2, "p1").http400_retry_config(Http400RetryConfig {
                 enabled: true,
-                diagnostics_enabled: false,
                 max_retries: 2,
             });
             let err = expect_err(
@@ -8372,7 +8244,6 @@ mod tests {
                 let up = upstream(vec![error(400, "bad request"), ok()]).await;
                 let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
                     enabled,
-                    diagnostics_enabled: false,
                     max_retries,
                 });
                 let err = expect_err(send(&fwd, vec![provider("p1", &up)], plain_body()).await);
@@ -8390,7 +8261,6 @@ mod tests {
                 let up = upstream(vec![error(status, "rejected"), ok()]).await;
                 let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
                     enabled: true,
-                    diagnostics_enabled: false,
                     max_retries: 2,
                 });
                 let err = expect_err(send(&fwd, vec![provider("p1", &up)], plain_body()).await);
@@ -8407,7 +8277,6 @@ mod tests {
             let up2 = upstream(vec![error(400, "still bad"), ok()]).await;
             let fwd = forwarder(2, "p1").http400_retry_config(Http400RetryConfig {
                 enabled: true,
-                diagnostics_enabled: false,
                 max_retries: 1,
             });
             let err = expect_err(
@@ -8437,7 +8306,6 @@ mod tests {
             .await;
             let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
                 enabled: true,
-                diagnostics_enabled: false,
                 max_retries: 1,
             });
             for _ in 0..2 {
@@ -8459,7 +8327,6 @@ mod tests {
             .await;
             let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
                 enabled: true,
-                diagnostics_enabled: false,
                 max_retries: 1,
             });
             let err = expect_err(
@@ -8484,7 +8351,6 @@ mod tests {
             let fwd = forwarder(1, "p1")
                 .http400_retry_config(Http400RetryConfig {
                     enabled: true,
-                    diagnostics_enabled: false,
                     max_retries: 2,
                 })
                 .stack_request(true);

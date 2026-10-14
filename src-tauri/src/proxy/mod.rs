@@ -24,8 +24,6 @@ pub mod model_mapper;
 pub mod opaque_state_rectifier;
 pub mod provider_router;
 pub mod providers;
-pub(crate) mod raw_capture;
-pub(crate) mod request_diagnostics;
 pub mod response_processor;
 pub(crate) mod server;
 pub mod session;

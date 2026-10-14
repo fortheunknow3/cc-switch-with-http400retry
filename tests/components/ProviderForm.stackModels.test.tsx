@@ -120,35 +120,6 @@ describe("ProviderForm Stack layout (Claude Code)", () => {
     settingsState.enableStackMode = true;
   });
 
-  it("loads and saves the provider reasoning compatibility switch independently", async () => {
-    const onSubmit = vi.fn();
-    renderForm("claude", onSubmit, {
-      meta: { apiFormat: "openai_responses", omitResponsesReasoning: true },
-    });
-    const control = screen.getByRole("checkbox", {
-      name: "providerForm.omitResponsesReasoning",
-    });
-    expect(control).toBeChecked();
-    const { values } = await save(onSubmit);
-    expect(values.meta?.omitResponsesReasoning).toBe(true);
-    expect(values.meta?.apiFormat).toBe("openai_responses");
-  });
-
-  it("allows disabling reasoning compatibility without changing the provider format", async () => {
-    const onSubmit = vi.fn();
-    renderForm("claude", onSubmit, {
-      meta: { apiFormat: "openai_responses", omitResponsesReasoning: true },
-    });
-    fireEvent.click(
-      screen.getByRole("checkbox", {
-        name: "providerForm.omitResponsesReasoning",
-      }),
-    );
-    const { values } = await save(onSubmit);
-    expect(values.meta?.omitResponsesReasoning).toBeUndefined();
-    expect(values.meta?.apiFormat).toBe("openai_responses");
-  });
-
   it("开了 Stack 设置时默认用简化面板：模型列表跟着映射，没有映射和配置编辑器", () => {
     renderForm("claude", vi.fn());
 
