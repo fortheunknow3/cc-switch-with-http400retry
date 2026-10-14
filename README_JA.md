@@ -1,6 +1,6 @@
 <div align="center">
 
-# CC Switch
+# CC Switch HTTP 400 自動リトライ版
 
 ### Claude Code、Claude Desktop、Codex、Gemini CLI、Grok Build、OpenCode、OpenClaw、Hermes Agent、Pi、MiniMax Code のオールインワン管理ツール
 
@@ -21,6 +21,20 @@
 **[ダウンロード](#ダウンロード--インストール) · [クイックスタート](#クイックスタート) · [特長](#特長) · [よくある質問](#よくある質問) · [ユーザーマニュアル](docs/user-manual/ja/README.md)**
 
 </div>
+
+## HTTP 400 自動リトライと Responses reasoning 修正
+
+本 fork はローカルルーターに設定可能な **HTTP 400 自動リトライ**（設定 → ルーティング → HTTP 400 自動リトライ、追加リトライ 0〜10 回・既定 3 回、待機は 0.5 秒から最大 5 秒）を追加し、**commandcode**（`https://api.commandcode.ai/provider/v1`）経由で `deepseek/deepseek-v4.1-flash` を **OpenAI Responses** 形式でルーティングする際に再現していた HTTP 400 を修正しました。
+
+### commandcode / deepseek-v4.1-flash の HTTP 400 をどう修正したか
+
+- **原因。** DeepSeek 系ゲートウェイは、ツール呼び出しを行う各アシスタント生成で reasoning（`reasoning_content` / Responses の `reasoning` 項目）の再送を要求します。**最後の実ユーザーメッセージ以降**の生成のいずれかで欠落していると、リクエスト全体が `400 invalid_request_error` で拒否されます（それより前の履歴は欠落していても通ります）。
+- **実装。** `src-tauri/src/proxy/providers/transform_responses.rs` の変換で、`convert_messages_to_input(messages, ensure_tool_turn_reasoning)` が各ツール呼び出し生成の reasoning 有無を記録し、最後の「実ユーザーメッセージ」（`tool_result` 以外を含む user メッセージ）の境界を追跡します。変換後、そのウィンドウ内で reasoning を持たない生成の直前に summary のみのプレースホルダーを挿入します：`{"type":"reasoning","id":"rs_ccswitch_placeholder","summary":[{"type":"summary_text","text":"tool call"}]}`。
+- **適用範囲。** reasoning 系ベンダー（モデル名またはベース URL が `deepseek` / `mimo` / `xiaomimimo` に一致。`src-tauri/src/proxy/providers/claude.rs` の `is_reasoning_vendor` を参照）かつ Claude → OpenAI Responses 経路のみ。ウィンドウが空の場合、既に reasoning がある生成、その他のベンダーや形式には影響せず、プロバイダー側の設定変更も不要です。
+- **確認方法。** ログに `[RESPONSES-REASONING-PLACEHOLDER] inserted N summary placeholder(s) after the last user message` が出力されます。
+- **検証。** 実エンドポイントに対する 17 回の承認済み A/B プローブで確認済みです（失敗リクエストの再送は 400、ウィンドウ内の全生成へのプレースホルダー挿入は 200、成功リクエストから reasoning を削除すると 400、など。各比較でモデル・ツール・出力上限・ツール呼び出しの対応は完全に同一）。
+
+本リポジトリで追跡する Markdown は README のみです。その他のドキュメントへのリンクは上流プロジェクトの該当ファイルを指します。
 
 ## ❤️スポンサー
 

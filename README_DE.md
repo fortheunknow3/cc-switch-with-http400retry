@@ -1,6 +1,6 @@
 <div align="center">
 
-# CC Switch
+# CC Switch HTTP 400 Auto-Retry
 
 ### Der All-in-One-Manager für Claude Code, Claude Desktop, Codex, Gemini CLI, Grok Build, OpenCode, OpenClaw, Hermes Agent, Pi & MiniMax Code
 
@@ -21,6 +21,20 @@
 **[Download](#download--installation) · [Schnellstart](#schnellstart) · [Funktionen](#funktionen) · [FAQ](#faq) · [Benutzerhandbuch (Englisch)](docs/user-manual/en/README.md)**
 
 </div>
+
+## HTTP-400-Autoretry und Responses-Reasoning-Fix
+
+Dieser Fork ergänzt den lokalen Router um **konfigurierbare HTTP-400-Wiederholungen** (Einstellungen → Routing → HTTP 400 Auto Retry; 0–10 zusätzliche Versuche, Standard 3; Wartezeit 0,5 s bis maximal 5 s) und behebt die reproduzierbaren HTTP-400-Antworten beim Routing von **commandcode** (`https://api.commandcode.ai/provider/v1`) mit `deepseek/deepseek-v4.1-flash` über das **OpenAI-Responses**-Format.
+
+### Wie der HTTP 400 für commandcode / deepseek-v4.1-flash behoben wird
+
+- **Ursache.** DeepSeek-Gateways verlangen, dass bei jeder Assistenten-Generierung mit Tool-Aufruf die Reasoning-Nutzlast (`reasoning_content` bzw. `reasoning`-Items der Responses-API) erneut mitgesendet wird. Fehlt sie in einer Generierung **nach der letzten echten Benutzernachricht**, weist das Gateway die gesamte Anfrage mit `400 invalid_request_error` zurück; ältere Generierungen dürfen sie weglassen.
+- **Implementierung.** In `src-tauri/src/proxy/providers/transform_responses.rs` erfasst `convert_messages_to_input(messages, ensure_tool_turn_reasoning)` für jede Tool-Aufruf-Generierung, ob ein `reasoning`-Item wiederholt wird, und verfolgt das Ende der letzten „echten“ Benutzernachricht (eine User-Nachricht, die mehr als `tool_result`-Blöcke enthält). Nach der Konvertierung wird vor jede Generierung ohne Reasoning in diesem Fenster ein reiner Summary-Platzhalter eingefügt: `{"type":"reasoning","id":"rs_ccswitch_placeholder","summary":[{"type":"summary_text","text":"tool call"}]}`.
+- **Geltungsbereich.** Nur für Reasoning-Anbieter (Modellname oder Basis-URL enthält `deepseek`, `mimo` oder `xiaomimimo`; siehe `is_reasoning_vendor` in `src-tauri/src/proxy/providers/claude.rs`) auf dem Claude-→-OpenAI-Responses-Pfad. Ein leeres Fenster, Generierungen mit vorhandenem Reasoning sowie alle anderen Anbieter und Formate bleiben unverändert; eine Anbieterkonfiguration ist nicht nötig.
+- **Nachvollziehbarkeit.** Jeder Lauf protokolliert `[RESPONSES-REASONING-PLACEHOLDER] inserted N summary placeholder(s) after the last user message`.
+- **Verifikation.** Durch 17 autorisierte A/B-Proben gegen den echten Endpunkt belegt (u. a. Wiederholung des fehlerhaften Requests → 400, Platzhalter vor jeder Generierung im Fenster → 200, Entfernen des Reasoning-Items aus einem zuvor erfolgreichen Request → 400; Modell, Tools, Ausgabelimit und Tool-Aufruf-Zuordnung waren in jedem Paar identisch).
+
+Nur README-Markdown-Dateien werden in diesem Repository verfolgt; Links zu anderen Dokumenten zeigen auf das Upstream-Projekt.
 
 ## ❤️Sponsoren
 

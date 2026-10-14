@@ -31,7 +31,16 @@ This fork adds configurable HTTP 400 retries to the local router. Open **Setting
 - Retries the same provider with increasing delays from **0.5 seconds** up to **5 seconds**.
 - The retry budget is shared across provider failover and request repairs. Existing repairs and failover attempts are counted separately.
 - Settings persist locally and apply to new requests. A single provider works without enabling automatic failover.
-- DeepSeek/MiMo-style gateways require every tool-call generation after the last user message to replay a `reasoning` item. When the client cannot supply one (that turn had no thinking block), the Claude → OpenAI Responses conversion injects a summary-only `reasoning` placeholder before each such generation, mirroring the existing Chat Completions behaviour. An empty window or a gateway that does not need it is unaffected.
+
+### How the commandcode / deepseek-v4.1-flash HTTP 400 is fixed
+
+Claude Code speaks Anthropic Messages, while providers such as **commandcode** (`https://api.commandcode.ai/provider/v1`) serve `deepseek/deepseek-v4.1-flash` over the **OpenAI Responses** wire. CC Switch converts between the two in `src-tauri/src/proxy/providers/transform_responses.rs`, and that conversion is where the request was being rejected.
+
+- **Root cause.** DeepSeek-style gateways require the reasoning payload (`reasoning_content` / Responses `reasoning` items) to be replayed on tool-call turns. If any tool-call generation **after the last real user message** is missing it, the gateway rejects the whole request with `400 invalid_request_error`; generations earlier in the history may omit it.
+- **Implementation.** `convert_messages_to_input(messages, ensure_tool_turn_reasoning)` records, for every assistant turn that emitted tool calls, whether a `reasoning` item is replayed, and tracks the end of the last "real" user message (a user message carrying anything besides `tool_result` blocks). After conversion, each reasoning-less generation inside that window gets a summary-only placeholder inserted in front of it: `{"type":"reasoning","id":"rs_ccswitch_placeholder","summary":[{"type":"summary_text","text":"tool call"}]}`.
+- **Scope.** Only reasoning vendors (model name or base URL matching `deepseek`, `mimo` or `xiaomimimo`; see `is_reasoning_vendor` in `src-tauri/src/proxy/providers/claude.rs`) on the Claude → OpenAI Responses path. An empty window, generations that already replay reasoning, and all other providers or wire formats are untouched, and no provider configuration is required.
+- **Observability.** Each run logs `[RESPONSES-REASONING-PLACEHOLDER] inserted N summary placeholder(s) after the last user message`.
+- **Verification.** Established with 17 authorized A/B probes against the live endpoint: replaying the failing body returned 400; neutralizing the appended turn's content, dropping `prompt_cache_key`, removing mid-history `system` messages or lowering the output budget still returned 400; inserting a placeholder before every reasoning-less generation in the window returned 200; removing the reasoning item from a known-good body turned it into 400. Model, tools, output budget and tool-call pairing were byte-identical within each pair.
 
 Run the feature tests with `pnpm test:unit -- tests/components/Http400RetryConfigPanel.test.tsx` and `cargo test --manifest-path src-tauri/Cargo.toml --lib http400`. For backend tests, set `CC_SWITCH_TEST_HOME` to a temporary directory to isolate your configuration.
 

@@ -31,7 +31,16 @@
 - 向同一供应商重发请求，等待间隔从 **0.5 秒** 逐步增加至最多 **5 秒**。
 - 供应商切换或请求修复不会重置 HTTP 400 重试额度；原有请求修复和故障转移的尝试独立计数。
 - 设置持久保存，对新请求生效。只有一个供应商、未开启自动故障转移时也可使用。
-- DeepSeek/MiMo 系网关要求最后一条用户消息之后的每一轮工具调用都回传 `reasoning` 项。客户端无法提供时（该轮没有 thinking 块），Claude → OpenAI Responses 转换会在这些轮次前各插入一个只含 summary 的 `reasoning` 占位项，与 Chat Completions 路径的既有行为一致；窗口为空或不需要该行为的网关不受影响。
+
+### commandcode / deepseek-v4.1-flash 的 HTTP 400 是如何修复的
+
+Claude Code 使用 Anthropic Messages 协议，而 **commandcode**（`https://api.commandcode.ai/provider/v1`）通过 **OpenAI Responses** 协议提供 `deepseek/deepseek-v4.1-flash`。CC Switch 在 `src-tauri/src/proxy/providers/transform_responses.rs` 中完成两种格式之间的转换，400 就发生在这一层。
+
+- **根因。** DeepSeek 系网关要求工具调用回合回传 reasoning（`reasoning_content` / Responses 的 `reasoning` 项）；只要**最后一条真实用户消息之后**的任意一轮工具调用缺失该项，整个请求就会被拒绝为 `400 invalid_request_error`，而更早的历史回合允许缺失。
+- **实现。** 转换过程中，`convert_messages_to_input(messages, ensure_tool_turn_reasoning)` 会记录每一轮工具调用是否带 `reasoning` 项，并跟踪最后一条“真实用户消息”（包含除 `tool_result` 以外内容的 user 消息）的边界。转换完成后，为窗口内每一轮缺少 reasoning 的生成前插入仅含 summary 的占位项：`{"type":"reasoning","id":"rs_ccswitch_placeholder","summary":[{"type":"summary_text","text":"tool call"}]}`。
+- **生效范围。** 仅限 reasoning 供应商（模型名或供应商 base URL 匹配 `deepseek` / `mimo` / `xiaomimimo`，见 `src-tauri/src/proxy/providers/claude.rs` 的 `is_reasoning_vendor`）的 Claude → OpenAI Responses 路由；窗口为空、已带 reasoning 的轮次，以及其他供应商与格式均不受影响，也不需要修改供应商配置。
+- **观察方式。** 日志出现 `[RESPONSES-REASONING-PLACEHOLDER] inserted N summary placeholder(s) after the last user message` 即表示补位生效。
+- **验证。** 通过 17 次经授权的真实上游 A/B 对照确认：原样重放失败请求返回 400；替换新增回合内容、去掉 `prompt_cache_key`、删除会话中段 `system` 消息或降低输出预算均仍为 400；在窗口内每一轮缺 reasoning 的生成前插入占位项返回 200；从原本成功的请求中删除 reasoning 项则变为 400。每组对照中模型、工具、输出预算与工具调用配对均逐字节一致。
 
 前端功能测试：`pnpm test:unit -- tests/components/Http400RetryConfigPanel.test.tsx`。后端功能测试：`cargo test --manifest-path src-tauri/Cargo.toml --lib http400`。运行后端测试前，请将 `CC_SWITCH_TEST_HOME` 设为临时目录以隔离个人配置。
 
