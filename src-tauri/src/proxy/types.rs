@@ -186,6 +186,35 @@ pub struct AppProxyConfig {
     pub circuit_min_requests: u32,
 }
 
+/// HTTP 400 自动重试配置，存储在 settings 表中，独立于供应商故障转移。
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct Http400RetryConfig {
+    pub enabled: bool,
+    /// 每个客户端请求允许的额外重试次数，不包含首次请求或整流器修复。
+    pub max_retries: u32,
+}
+
+impl Http400RetryConfig {
+    pub const MAX_RETRIES: u32 = 10;
+
+    pub fn validate(&self) -> Result<(), String> {
+        if self.max_retries > Self::MAX_RETRIES {
+            return Err("HTTP 400 最大重试次数必须为 0–10 之间的整数".to_string());
+        }
+        Ok(())
+    }
+}
+
+impl Default for Http400RetryConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            max_retries: 3,
+        }
+    }
+}
+
 /// 整流器配置
 ///
 /// 存储在 settings 表中

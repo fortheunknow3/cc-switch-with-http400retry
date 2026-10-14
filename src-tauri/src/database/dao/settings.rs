@@ -236,6 +236,28 @@ impl Database {
         Ok(())
     }
 
+    // --- HTTP 400 自动重试配置 ---
+
+    pub fn get_http400_retry_config(
+        &self,
+    ) -> Result<crate::proxy::types::Http400RetryConfig, AppError> {
+        match self.get_setting("http400_retry_config")? {
+            Some(json) => serde_json::from_str(&json)
+                .map_err(|e| AppError::Database(format!("解析 HTTP 400 重试配置失败: {e}"))),
+            None => Ok(crate::proxy::types::Http400RetryConfig::default()),
+        }
+    }
+
+    pub fn set_http400_retry_config(
+        &self,
+        config: &crate::proxy::types::Http400RetryConfig,
+    ) -> Result<(), AppError> {
+        config.validate().map_err(AppError::Message)?;
+        let json = serde_json::to_string(config)
+            .map_err(|e| AppError::Database(format!("序列化 HTTP 400 重试配置失败: {e}")))?;
+        self.set_setting("http400_retry_config", &json)
+    }
+
     // --- 整流器配置 ---
 
     /// 获取整流器配置
@@ -323,5 +345,53 @@ impl Database {
         let json = serde_json::to_string(config)
             .map_err(|e| AppError::Database(format!("序列化日志配置失败: {e}")))?;
         self.set_setting("log_config", &json)
+    }
+}
+
+#[cfg(test)]
+mod http400_retry_tests {
+    use crate::{database::Database, proxy::types::Http400RetryConfig};
+
+    #[test]
+    fn http400_retry_defaults_and_persistence() {
+        let db = Database::memory().unwrap();
+        assert_eq!(
+            db.get_http400_retry_config().unwrap(),
+            Http400RetryConfig::default()
+        );
+        let mut config = Http400RetryConfig {
+            enabled: true,
+            max_retries: 7,
+        };
+        db.set_http400_retry_config(&config).unwrap();
+        assert_eq!(db.get_http400_retry_config().unwrap(), config);
+        config.enabled = false;
+        db.set_http400_retry_config(&config).unwrap();
+        assert_eq!(db.get_http400_retry_config().unwrap(), config);
+    }
+
+    #[test]
+    fn http400_retry_rejects_invalid_counts_without_overwriting_settings() {
+        let db = Database::memory().unwrap();
+        for max_retries in [11, u32::MAX] {
+            assert!(db
+                .set_http400_retry_config(&Http400RetryConfig {
+                    enabled: true,
+                    max_retries
+                })
+                .is_err());
+        }
+        assert_eq!(
+            db.get_http400_retry_config().unwrap(),
+            Http400RetryConfig::default()
+        );
+        for value in [
+            r#"{"enabled":true,"maxRetries":-1}"#,
+            r#"{"enabled":true,"maxRetries":1.5}"#,
+        ] {
+            assert!(serde_json::from_str::<Http400RetryConfig>(value).is_err());
+        }
+        let partial: Http400RetryConfig = serde_json::from_str("{}").unwrap();
+        assert_eq!(partial, Http400RetryConfig::default());
     }
 }

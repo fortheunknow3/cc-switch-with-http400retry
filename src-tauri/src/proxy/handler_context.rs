@@ -290,6 +290,7 @@ impl RequestContext {
             self.copilot_optimizer_config.clone(),
             max_retries,
         )
+        .http400_retry_config(state.db.get_http400_retry_config().unwrap_or_default())
         .stack_request(self.is_stack)
     }
 

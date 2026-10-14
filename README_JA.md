@@ -16,7 +16,7 @@
 
 ### 🌐 唯一の公式サイト：**[ccswitch.io](https://ccswitch.io)**
 
-[English](README.md) | [中文](README_ZH.md) | 日本語 | [Deutsch](README_DE.md) | [Changelog](CHANGELOG.md)
+[English](README.md) | [中文](README_ZH.md) | 日本語 | [Deutsch](README_DE.md) | [Changelog](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CHANGELOG.md)
 
 **[ダウンロード](#ダウンロード--インストール) · [クイックスタート](#クイックスタート) · [特長](#特長) · [よくある質問](#よくある質問) · [ユーザーマニュアル](docs/user-manual/ja/README.md)**
 
@@ -323,7 +323,7 @@ paru -S cc-switch-bin
 
 ## 特長
 
-[完全な更新履歴](CHANGELOG.md) | [v4.0 リリースノート](docs/release-notes/v4.0.4-ja.md)
+[完全な更新履歴](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CHANGELOG.md) | [v4.0 リリースノート](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/release-notes/v4.0.4-ja.md)
 
 ### ツール別の対応機能
 
@@ -365,7 +365,7 @@ paru -S cc-switch-bin
 - **整流器** — 一部の上流と互換性のないリクエストを自動で修正（Thinking 署名、画像非対応時のフォールバックなど）
 - 公式プロバイダ（Claude Official など）はローカルルーティングを経由できません（Codex の OpenAI Official を除く）
 - ルーティングサービスの状態、待ち受けアドレス、フェイルオーバーのパラメータは「設定 → ローカルルーティング」にまとまっています
-- 使い方ガイド：[Claude Code で GPT を使う](docs/guides/claude-codex-routing-guide-ja.md) · [Codex で Claude を使う](docs/guides/codex-claude-routing-guide-ja.md)
+- 使い方ガイド：[Claude Code で GPT を使う](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/claude-codex-routing-guide-ja.md) · [Codex で Claude を使う](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/codex-claude-routing-guide-ja.md)
 
 ### 集約モード
 
@@ -373,7 +373,7 @@ paru -S cc-switch-bin
 - **いつでも追加・削除** — プロバイダカードの「追加」または「削除」をクリックし、さらに 1 社を既定のプロバイダに選びます。集約モデルを指定していないリクエストはすべて既定のプロバイダに送られます。Codex の OpenAI Official は既定のプロバイダ専用です。集約モードは現在 Claude の公式サブスクリプションに対応していません
 - **注意** — 集約ではフェイルオーバーを行いません。Claude Code は 2.1.243 以降が必要です。Codex は集約の一覧が変わると再起動が必要ですが、Claude Code は不要です。同じセッションの途中でモデルを変えると、新しいモデルでプロンプトキャッシュを作り直すため、最初のターンは費用がやや高くなります
 - 集約モードの設計の多くは [opencodex](https://github.com/lidge-jun/opencodex) を参考にしています。作者とコントリビューターに感謝します
-- ドキュメント：[集約モードのマニュアル](docs/user-manual/ja/4-proxy/4.6-aggregation.md) · [図解ガイド（中国語）](docs/guides/aggregation-mode-guide-zh.md)
+- ドキュメント：[集約モードのマニュアル](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/ja/4-proxy/4.6-aggregation.md) · [図解ガイド（中国語）](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/aggregation-mode-guide-zh.md)
 
 ### MCP、プロンプト & Skills
 
@@ -494,7 +494,7 @@ Codex では、CC Switch 内の「ChatGPT でログイン」から複数の Chat
 
 使えますが、ルーティングを使う必要があります。プロバイダを編集する際に、「詳細オプション」の「上流フォーマット」でプロバイダに合った API 形式を選んでください。Chat Completions API のみを提供するサービス（多くのローカルモデルサービスがこれに当たります）は「OpenAI Chat Completions」、Responses API を提供するサービスは「OpenAI Responses API」、Gemini は「Gemini Native generateContent」を選びます。その後、Claude Code のページの「ルーティング」タブで「ルーティングを開始」をクリックしてください。形式の選択を誤ったり、ルーティングを開始していなかったりすると、通常は 404 または 405 エラーになります。
 
-逆に、Codex や Grok Build の「上流フォーマット」で「Anthropic Messages」を選ぶと、Claude 形式のプロバイダを使えます。この場合もルーティングが必要です。詳しくは [Claude Code で GPT を使う](docs/guides/claude-codex-routing-guide-ja.md) と [Codex で Claude を使う](docs/guides/codex-claude-routing-guide-ja.md) をご覧ください。
+逆に、Codex や Grok Build の「上流フォーマット」で「Anthropic Messages」を選ぶと、Claude 形式のプロバイダを使えます。この場合もルーティングが必要です。詳しくは [Claude Code で GPT を使う](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/claude-codex-routing-guide-ja.md) と [Codex で Claude を使う](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/codex-claude-routing-guide-ja.md) をご覧ください。
 
 </details>
 
@@ -555,13 +555,13 @@ CC_SWITCH_GDK_BACKEND=wayland ./CC-Switch-*.AppImage
 
 </details>
 
-その他の質問については、ユーザーマニュアルの[よくある質問](docs/user-manual/ja/5-faq/5.2-questions.md)をご覧ください。
+その他の質問については、ユーザーマニュアルの[よくある質問](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/ja/5-faq/5.2-questions.md)をご覧ください。
 
 ## 貢献
 
 Issue でのバグ報告やご提案を歓迎します！新機能を開発する前に、まず Issue を作成して実装方針をご相談ください。プロジェクトに合わない機能の PR はクローズされる場合があります。
 
-開発環境、提出前のチェック、アーキテクチャの説明は [CONTRIBUTING.md](CONTRIBUTING.md)（英語）をご覧ください。使い方に関する質問は、まず [SUPPORT.md](SUPPORT.md) をご確認ください。セキュリティ上の脆弱性は、[SECURITY.md](SECURITY.md) に従って非公開で報告してください。
+開発環境、提出前のチェック、アーキテクチャの説明は [CONTRIBUTING.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CONTRIBUTING.md)（英語）をご覧ください。使い方に関する質問は、まず [SUPPORT.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/SUPPORT.md) をご確認ください。セキュリティ上の脆弱性は、[SECURITY.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/SECURITY.md) に従って非公開で報告してください。
 
 **技術スタック**：Tauri 2 · Rust · React 18 · TypeScript · SQLite
 

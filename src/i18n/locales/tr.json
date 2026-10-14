@@ -1,4 +1,15 @@
 {
+  "http400Retry": {
+    "title": "HTTP 400 otomatik yeniden deneme",
+    "enabled": "HTTP 400 otomatik yeniden denemeyi etkinleştir",
+    "description": "Yerel yönlendirme modundaki tüm uygulamalar için geçerlidir. HTTP 400 yanıtından sonra aynı sağlayıcıya, 5 saniyeye kadar artan aralıklarla tekrar istek gönderir. Kaydedilen ayarlar yeni isteklere uygulanır.",
+    "maxRetries": "En fazla ek deneme sayısı",
+    "hint": "İlk deneme hariç 0–10. 3, en fazla 3 ek deneme anlamına gelir; 0 yeniden denemeyi kapatır. Mevcut istek düzeltmeleri ve sağlayıcı değişimleri ayrı sayılır.",
+    "invalidMaxRetries": "En fazla deneme sayısı 0 ile 10 arasında bir tam sayı olmalıdır",
+    "saved": "HTTP 400 yeniden deneme ayarları kaydedildi",
+    "saveFailed": "HTTP 400 yeniden deneme ayarları kaydedilemedi",
+    "loadFailed": "Ayarlar yüklenemedi. Bu sayfayı yeniden açın"
+  },
   "app": {
     "title": "CC Switch",
     "description": "Claude Code, Codex ve Gemini CLI için Hepsi Bir Arada Asistan"

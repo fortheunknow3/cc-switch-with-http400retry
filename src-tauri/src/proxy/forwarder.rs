@@ -23,7 +23,9 @@ use super::{
     thinking_rectifier::{
         normalize_thinking_type, rectify_anthropic_request, should_rectify_thinking_signature,
     },
-    types::{CopilotOptimizerConfig, OptimizerConfig, ProxyStatus, RectifierConfig},
+    types::{
+        CopilotOptimizerConfig, Http400RetryConfig, OptimizerConfig, ProxyStatus, RectifierConfig,
+    },
     ProxyError,
 };
 use crate::commands::{CodexOAuthState, CopilotAuthState, XaiOAuthState};
@@ -358,6 +360,8 @@ pub struct RequestForwarder {
     session_client_provided: bool,
     /// 整流器配置
     rectifier_config: RectifierConfig,
+    /// 每个客户端请求共用一个 HTTP 400 重试预算，跨整流和故障转移不重置。
+    http400_retry_config: Http400RetryConfig,
     /// 优化器配置
     optimizer_config: OptimizerConfig,
     /// Copilot 优化器配置
@@ -482,6 +486,7 @@ impl RequestForwarder {
             session_id,
             session_client_provided,
             rectifier_config,
+            http400_retry_config: Http400RetryConfig::default(),
             optimizer_config,
             copilot_optimizer_config,
             non_streaming_timeout: std::time::Duration::from_secs(non_streaming_timeout),
@@ -491,6 +496,11 @@ impl RequestForwarder {
             max_attempts,
             stack_request: false,
         }
+    }
+
+    pub fn http400_retry_config(mut self, config: Http400RetryConfig) -> Self {
+        self.http400_retry_config = config;
+        self
     }
 
     /// 标记为 Stack 模型的请求。
@@ -808,6 +818,14 @@ impl RequestForwarder {
         let mut last_error = None;
         let mut last_provider = None;
         let mut attempted_providers = 0usize;
+        let mut http400_retries_remaining =
+            if self.http400_retry_config.enabled && !self.stack_request {
+                self.http400_retry_config
+                    .max_retries
+                    .min(Http400RetryConfig::MAX_RETRIES)
+            } else {
+                0
+            };
 
         // 单 Provider 场景下跳过熔断器检查（故障转移关闭时）；Stack 模型的请求不碰熔断器。
         let bypass_circuit_breaker = providers.len() == 1 || !self.routing_state_enabled();
@@ -873,7 +891,7 @@ impl RequestForwarder {
             // 新「正在尝试哪个 provider」的展示字段。
             self.note_attempt(provider).await;
 
-            // 转发请求（每个 Provider 只尝试一次，重试由客户端控制）
+            // HTTP 400 可按独立配置重试同一家；其余错误沿用故障转移/整流逻辑。
             let mut attempted_codex_upstream_format = None;
             match self
                 .forward(
@@ -886,6 +904,7 @@ impl RequestForwarder {
                     &extensions,
                     adapter.as_ref(),
                     &mut attempted_codex_upstream_format,
+                    &mut http400_retries_remaining,
                 )
                 .await
             {
@@ -946,6 +965,7 @@ impl RequestForwarder {
                                     &extensions,
                                     adapter.as_ref(),
                                     &mut media_retry_codex_upstream_format,
+                                    &mut http400_retries_remaining,
                                 )
                                 .await
                             {
@@ -1037,6 +1057,7 @@ impl RequestForwarder {
                                     &extensions,
                                     adapter.as_ref(),
                                     &mut opaque_retry_codex_upstream_format,
+                                    &mut http400_retries_remaining,
                                 )
                                 .await
                             {
@@ -1143,6 +1164,7 @@ impl RequestForwarder {
                                         &extensions,
                                         adapter.as_ref(),
                                         &mut signature_retry_codex_upstream_format,
+                                        &mut http400_retries_remaining,
                                     )
                                     .await
                                 {
@@ -1242,6 +1264,7 @@ impl RequestForwarder {
                                     &extensions,
                                     adapter.as_ref(),
                                     &mut budget_retry_codex_upstream_format,
+                                    &mut http400_retries_remaining,
                                 )
                                 .await
                             {
@@ -1364,6 +1387,61 @@ impl RequestForwarder {
         })
     }
 
+    /// 对同一家重试 HTTP 400；成功响应（包括已开始的流）不会被重放。
+    /// 预算由客户端请求持有，整流器或下一家供应商不会重新获得一份预算。
+    #[allow(clippy::too_many_arguments)]
+    async fn forward(
+        &self,
+        app_type: &AppType,
+        method: &http::Method,
+        provider: &Provider,
+        endpoint: &str,
+        body: &Value,
+        headers: &axum::http::HeaderMap,
+        extensions: &Extensions,
+        adapter: &dyn ProviderAdapter,
+        codex_upstream_format_out: &mut Option<CodexUpstreamFormat>,
+        http400_retries_remaining: &mut u32,
+    ) -> Result<(ProxyResponse, Option<String>, Option<String>), ProxyError> {
+        loop {
+            let result = self
+                .forward_once(
+                    app_type,
+                    method,
+                    provider,
+                    endpoint,
+                    body,
+                    headers,
+                    extensions,
+                    adapter,
+                    codex_upstream_format_out,
+                )
+                .await;
+            if !matches!(&result, Err(ProxyError::UpstreamError { status: 400, .. }))
+                || *http400_retries_remaining == 0
+            {
+                return result;
+            }
+
+            *http400_retries_remaining -= 1;
+            let max_retries = self
+                .http400_retry_config
+                .max_retries
+                .min(Http400RetryConfig::MAX_RETRIES);
+            let retry_number = max_retries - *http400_retries_remaining;
+            let delay_ms = (500u64 * (1u64 << (retry_number - 1))).min(5_000);
+            log::info!(
+                "[{}] [HTTP400-RETRY] provider={}, retry={}/{}, delay={}ms",
+                app_type.as_str(),
+                provider.id,
+                retry_number,
+                max_retries,
+                delay_ms
+            );
+            tokio::time::sleep(std::time::Duration::from_millis(delay_ms)).await;
+        }
+    }
+
     /// 转发单个请求（使用适配器）
     ///
     /// 成功时返回 `(response, claude_api_format, outbound_model)`，其中
@@ -1371,7 +1449,7 @@ impl RequestForwarder {
     /// `codex_upstream_format_out` 记下这次实际选中的 Codex 上游格式：成功时交给
     /// `finish_success`，失败时给整流判断用（Copilot 按模型逐次选协议，不能从静态配置推）。
     #[allow(clippy::too_many_arguments)]
-    async fn forward(
+    async fn forward_once(
         &self,
         app_type: &AppType,
         method: &http::Method,
@@ -4703,6 +4781,7 @@ mod tests {
             session_id: String::new(),
             session_client_provided: false,
             rectifier_config: RectifierConfig::default(),
+            http400_retry_config: Http400RetryConfig::default(),
             optimizer_config: OptimizerConfig::default(),
             copilot_optimizer_config: CopilotOptimizerConfig::default(),
             non_streaming_timeout,
@@ -6278,6 +6357,7 @@ mod tests {
                     &Extensions::new(),
                     adapter.as_ref(),
                     &mut codex_upstream_format,
+                    &mut 0,
                 )
                 .await
             {
@@ -8086,6 +8166,195 @@ mod tests {
                 }
             );
             assert_eq!(breaker(&fwd, "p1").await, None);
+        }
+
+        #[tokio::test]
+        async fn http400_retry_succeeds_on_the_same_provider_and_counts_one_request() {
+            let up = upstream(vec![error(400, "temporary rejection"), ok()]).await;
+            let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
+                enabled: true,
+                max_retries: 2,
+            });
+            let result = send(&fwd, vec![provider("p1", &up)], plain_body()).await;
+            assert_eq!(result.ok().map(|r| r.provider.id), Some("p1".into()));
+            let requests = up.requests.lock().await;
+            assert_eq!(requests.len(), 2);
+            assert_eq!(requests[0], requests[1]);
+            let status = books(&fwd).await;
+            assert_eq!(
+                (
+                    status.total,
+                    status.success,
+                    status.failed,
+                    status.failover_count
+                ),
+                (1, 1, 0, 0)
+            );
+            assert_eq!(breaker(&fwd, "p1").await, Some((1, 0)));
+        }
+
+        #[tokio::test]
+        async fn http400_retry_stops_at_the_configured_limit_and_preserves_the_last_error() {
+            let up = upstream(vec![
+                error(400, "first"),
+                error(400, "second"),
+                error(400, "last"),
+                ok(),
+            ])
+            .await;
+            let unused = upstream(vec![]).await;
+            let fwd = forwarder(2, "p1").http400_retry_config(Http400RetryConfig {
+                enabled: true,
+                max_retries: 2,
+            });
+            let err = expect_err(
+                send(
+                    &fwd,
+                    vec![provider("p1", &up), provider("p2", &unused)],
+                    plain_body(),
+                )
+                .await,
+            );
+            assert!(
+                matches!(err.error, ProxyError::UpstreamError { status: 400, ref body } if body.as_ref().unwrap().contains("last"))
+            );
+            assert_eq!(up.requests.lock().await.len(), 3);
+            assert!(unused.requests.lock().await.is_empty());
+            let status = books(&fwd).await;
+            assert_eq!(
+                (status.total, status.failed, status.failover_count),
+                (1, 1, 0)
+            );
+            let stats = fwd
+                .router
+                .get_circuit_breaker_stats("p1", "claude")
+                .await
+                .unwrap();
+            assert_eq!((stats.total_requests, stats.failed_requests), (0, 0));
+        }
+
+        #[tokio::test]
+        async fn http400_retry_disabled_or_zero_sends_only_once() {
+            for (enabled, max_retries) in [(false, 3), (true, 0)] {
+                let up = upstream(vec![error(400, "bad request"), ok()]).await;
+                let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
+                    enabled,
+                    max_retries,
+                });
+                let err = expect_err(send(&fwd, vec![provider("p1", &up)], plain_body()).await);
+                assert!(matches!(
+                    err.error,
+                    ProxyError::UpstreamError { status: 400, .. }
+                ));
+                assert_eq!(up.requests.lock().await.len(), 1);
+            }
+        }
+
+        #[tokio::test]
+        async fn http400_retry_does_not_retry_other_status_codes() {
+            for status in [401, 422, 429, 503] {
+                let up = upstream(vec![error(status, "rejected"), ok()]).await;
+                let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
+                    enabled: true,
+                    max_retries: 2,
+                });
+                let err = expect_err(send(&fwd, vec![provider("p1", &up)], plain_body()).await);
+                assert!(
+                    matches!(err.error, ProxyError::UpstreamError { status: actual, .. } if actual == status)
+                );
+                assert_eq!(up.requests.lock().await.len(), 1);
+            }
+        }
+
+        #[tokio::test]
+        async fn http400_retry_budget_is_shared_across_provider_failover() {
+            let up1 = upstream(vec![error(400, "temporary"), error(503, "busy")]).await;
+            let up2 = upstream(vec![error(400, "still bad"), ok()]).await;
+            let fwd = forwarder(2, "p1").http400_retry_config(Http400RetryConfig {
+                enabled: true,
+                max_retries: 1,
+            });
+            let err = expect_err(
+                send(
+                    &fwd,
+                    vec![provider("p1", &up1), provider("p2", &up2)],
+                    plain_body(),
+                )
+                .await,
+            );
+            assert!(matches!(
+                err.error,
+                ProxyError::UpstreamError { status: 400, .. }
+            ));
+            assert_eq!(up1.requests.lock().await.len(), 2);
+            assert_eq!(up2.requests.lock().await.len(), 1);
+        }
+
+        #[tokio::test]
+        async fn http400_retry_budget_is_fresh_for_each_client_request() {
+            let up = upstream(vec![
+                error(400, "temporary"),
+                ok(),
+                error(400, "temporary"),
+                ok(),
+            ])
+            .await;
+            let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
+                enabled: true,
+                max_retries: 1,
+            });
+            for _ in 0..2 {
+                assert!(send(&fwd, vec![provider("p1", &up)], plain_body())
+                    .await
+                    .is_ok());
+            }
+            assert_eq!(up.requests.lock().await.len(), 4);
+        }
+
+        #[tokio::test]
+        async fn http400_retry_budget_is_not_reset_by_rectifiers() {
+            let up = upstream(vec![
+                error(400, SIGNATURE_ERROR),
+                error(400, SIGNATURE_ERROR),
+                error(400, "still bad"),
+                ok(),
+            ])
+            .await;
+            let fwd = forwarder(1, "p1").http400_retry_config(Http400RetryConfig {
+                enabled: true,
+                max_retries: 1,
+            });
+            let err = expect_err(
+                send(
+                    &fwd,
+                    vec![provider("p1", &up)],
+                    body_with_thinking_signature(),
+                )
+                .await,
+            );
+            assert!(matches!(
+                err.error,
+                ProxyError::UpstreamError { status: 400, .. }
+            ));
+            // 首次请求 + 一次 HTTP 400 重试 + 原有签名修复一次。
+            assert_eq!(up.requests.lock().await.len(), 3);
+        }
+
+        #[tokio::test]
+        async fn http400_retry_keeps_stack_requests_without_retries() {
+            let up = upstream(vec![error(400, "bad request"), ok()]).await;
+            let fwd = forwarder(1, "p1")
+                .http400_retry_config(Http400RetryConfig {
+                    enabled: true,
+                    max_retries: 2,
+                })
+                .stack_request(true);
+            let err = expect_err(send(&fwd, vec![provider("p1", &up)], plain_body()).await);
+            assert!(matches!(
+                err.error,
+                ProxyError::UpstreamError { status: 400, .. }
+            ));
+            assert_eq!(up.requests.lock().await.len(), 1);
         }
 
         #[tokio::test]

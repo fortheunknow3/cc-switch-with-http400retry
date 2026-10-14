@@ -50,61 +50,61 @@
 
 | 文件 | 内容 |
 |------|------|
-| [1.1-introduction.md](./1-getting-started/1.1-introduction.md) | 软件介绍、核心功能、支持平台 |
-| [1.2-installation.md](./1-getting-started/1.2-installation.md) | Windows/macOS/Linux 安装指南 |
-| [1.3-interface.md](./1-getting-started/1.3-interface.md) | 侧栏布局、连接模式标签、供应商卡片说明 |
-| [1.4-quickstart.md](./1-getting-started/1.4-quickstart.md) | 5 分钟快速上手教程 |
-| [1.5-settings.md](./1-getting-started/1.5-settings.md) | 设置六个分组：通用、应用配置、本地路由、网络、数据、关于 |
+| [1.1-introduction.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.1-introduction.md) | 软件介绍、核心功能、支持平台 |
+| [1.2-installation.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.2-installation.md) | Windows/macOS/Linux 安装指南 |
+| [1.3-interface.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.3-interface.md) | 侧栏布局、连接模式标签、供应商卡片说明 |
+| [1.4-quickstart.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.4-quickstart.md) | 5 分钟快速上手教程 |
+| [1.5-settings.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.5-settings.md) | 设置六个分组：通用、应用配置、本地路由、网络、数据、关于 |
 
 ### 2. 供应商管理
 
 | 文件 | 内容 |
 |------|------|
-| [2.1-add.md](./2-providers/2.1-add.md) | 使用预设、自定义配置、统一供应商 |
-| [2.2-switch.md](./2-providers/2.2-switch.md) | 直连/路由/聚合、托盘切换、生效方式 |
-| [2.3-edit.md](./2-providers/2.3-edit.md) | 编辑配置、修改 API Key、全局设置与编辑冲突 |
-| [2.4-sort-duplicate.md](./2-providers/2.4-sort-duplicate.md) | 拖拽排序、复制供应商、删除 |
-| [2.5-usage-query.md](./2-providers/2.5-usage-query.md) | 用量查询、剩余额度、多套餐显示 |
-| [2.6-claude-desktop.md](./2-providers/2.6-claude-desktop.md) | Claude Desktop 第三方供应商、直连与模型映射 |
+| [2.1-add.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.1-add.md) | 使用预设、自定义配置、统一供应商 |
+| [2.2-switch.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.2-switch.md) | 直连/路由/聚合、托盘切换、生效方式 |
+| [2.3-edit.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.3-edit.md) | 编辑配置、修改 API Key、全局设置与编辑冲突 |
+| [2.4-sort-duplicate.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.4-sort-duplicate.md) | 拖拽排序、复制供应商、删除 |
+| [2.5-usage-query.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.5-usage-query.md) | 用量查询、剩余额度、多套餐显示 |
+| [2.6-claude-desktop.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.6-claude-desktop.md) | Claude Desktop 第三方供应商、直连与模型映射 |
 
 ### 3. 扩展功能
 
 | 文件 | 内容 |
 |------|------|
-| [3.1-mcp.md](./3-extensions/3.1-mcp.md) | MCP 协议、添加服务器、应用绑定 |
-| [3.2-prompts.md](./3-extensions/3.2-prompts.md) | 创建提示词、启用切换、目标文件 |
-| [3.3-skills.md](./3-extensions/3.3-skills.md) | 发现技能、安装卸载、仓库管理 |
-| [3.4-sessions.md](./3-extensions/3.4-sessions.md) | 会话浏览、搜索过滤、恢复与删除 |
-| [3.5-workspace.md](./3-extensions/3.5-workspace.md) | OpenClaw 工作区文件、每日记忆 |
+| [3.1-mcp.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/3-extensions/3.1-mcp.md) | MCP 协议、添加服务器、应用绑定 |
+| [3.2-prompts.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/3-extensions/3.2-prompts.md) | 创建提示词、启用切换、目标文件 |
+| [3.3-skills.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/3-extensions/3.3-skills.md) | 发现技能、安装卸载、仓库管理 |
+| [3.4-sessions.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/3-extensions/3.4-sessions.md) | 会话浏览、搜索过滤、恢复与删除 |
+| [3.5-workspace.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/3-extensions/3.5-workspace.md) | OpenClaw 工作区文件、每日记忆 |
 
 ### 4. 本地路由与高可用
 
 | 文件 | 内容 |
 |------|------|
-| [4.1-service.md](./4-proxy/4.1-service.md) | 启动本地路由、配置项、接口格式转换 |
-| [4.2-routing.md](./4-proxy/4.2-routing.md) | 应用路由、配置修改、状态指示 |
-| [4.3-failover.md](./4-proxy/4.3-failover.md) | 故障转移队列、熔断器、健康状态 |
-| [4.4-usage.md](./4-proxy/4.4-usage.md) | 用量统计、趋势图表、定价配置 |
-| [4.5-model-test.md](./4-proxy/4.5-model-test.md) | 连通检测、检测参数 |
-| [4.6-aggregation.md](./4-proxy/4.6-aggregation.md) | 聚合模式、默认供应商、ccs- 前缀、Codex 重启 |
+| [4.1-service.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.1-service.md) | 启动本地路由、配置项、接口格式转换 |
+| [4.2-routing.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.2-routing.md) | 应用路由、配置修改、状态指示 |
+| [4.3-failover.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.3-failover.md) | 故障转移队列、熔断器、健康状态 |
+| [4.4-usage.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.4-usage.md) | 用量统计、趋势图表、定价配置 |
+| [4.5-model-test.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.5-model-test.md) | 连通检测、检测参数 |
+| [4.6-aggregation.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.6-aggregation.md) | 聚合模式、默认供应商、ccs- 前缀、Codex 重启 |
 
 ### 5. 常见问题
 
 | 文件 | 内容 |
 |------|------|
-| [5.1-config-files.md](./5-faq/5.1-config-files.md) | CC Switch 存储、CLI 配置文件格式 |
-| [5.2-questions.md](./5-faq/5.2-questions.md) | 常见问题解答 |
-| [5.3-deeplink.md](./5-faq/5.3-deeplink.md) | 深度链接协议、生成和使用方法 |
-| [5.4-env-conflict.md](./5-faq/5.4-env-conflict.md) | 环境变量冲突检测与处理 |
+| [5.1-config-files.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/5-faq/5.1-config-files.md) | CC Switch 存储、CLI 配置文件格式 |
+| [5.2-questions.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/5-faq/5.2-questions.md) | 常见问题解答 |
+| [5.3-deeplink.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/5-faq/5.3-deeplink.md) | 深度链接协议、生成和使用方法 |
+| [5.4-env-conflict.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/5-faq/5.4-env-conflict.md) | 环境变量冲突检测与处理 |
 
 ## 快速链接
 
-- **新用户**：从 [1.1 软件介绍](./1-getting-started/1.1-introduction.md) 开始
-- **安装问题**：查看 [1.2 安装指南](./1-getting-started/1.2-installation.md)
-- **配置供应商**：查看 [2.1 添加供应商](./2-providers/2.1-add.md)
-- **使用 Claude Desktop**：查看 [2.6 Claude Desktop](./2-providers/2.6-claude-desktop.md)
-- **使用本地路由**：查看 [4.1 本地路由服务](./4-proxy/4.1-service.md)
-- **遇到问题**：查看 [5.2 FAQ](./5-faq/5.2-questions.md)
+- **新用户**：从 [1.1 软件介绍](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.1-introduction.md) 开始
+- **安装问题**：查看 [1.2 安装指南](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.2-installation.md)
+- **配置供应商**：查看 [2.1 添加供应商](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.1-add.md)
+- **使用 Claude Desktop**：查看 [2.6 Claude Desktop](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.6-claude-desktop.md)
+- **使用本地路由**：查看 [4.1 本地路由服务](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.1-service.md)
+- **遇到问题**：查看 [5.2 FAQ](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/5-faq/5.2-questions.md)
 
 ## 版本信息
 
@@ -114,13 +114,13 @@
 
 ### 近期主要变化（v4.0）
 
-- **界面改版**：顶部导航换成左侧栏，用量统计、授权中心、MCP、Skills、提示词、会话、应用各占一页；设置分为通用、应用配置、本地路由、网络、数据、关于六组 — 详见 [1.3 界面概览](./1-getting-started/1.3-interface.md)、[1.5 个性化配置](./1-getting-started/1.5-settings.md)
-- **直连 / 路由 / 聚合三种连接模式**：在每个应用页顶部选择，回到直连只需一步 — 详见 [2.2 切换供应商](./2-providers/2.2-switch.md)
-- **新增聚合模式**：Claude Code 和 Codex 可以在一个会话里按模型混用多家供应商 — 详见 [4.6 聚合模式](./4-proxy/4.6-aggregation.md)
-- **切换只改关键字段**：地址、密钥、模型等关键字段以外的设置原样保留，不再使用通用配置片段 — 详见 [2.3 编辑供应商](./2-providers/2.3-edit.md)
-- **授权中心**：ChatGPT、GitHub Copilot、xAI 等账号集中在侧栏「授权中心」管理 — 详见 [1.5 个性化配置](./1-getting-started/1.5-settings.md)
-- **「应用」页**：安装、升级各 CLI 工具，选择侧栏显示哪些应用 — 详见 [1.2 安装指南](./1-getting-started/1.2-installation.md)
-- 完整变化见 [v4.0 发布说明](../../release-notes/v4.0.4-zh.md)
+- **界面改版**：顶部导航换成左侧栏，用量统计、授权中心、MCP、Skills、提示词、会话、应用各占一页；设置分为通用、应用配置、本地路由、网络、数据、关于六组 — 详见 [1.3 界面概览](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.3-interface.md)、[1.5 个性化配置](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.5-settings.md)
+- **直连 / 路由 / 聚合三种连接模式**：在每个应用页顶部选择，回到直连只需一步 — 详见 [2.2 切换供应商](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.2-switch.md)
+- **新增聚合模式**：Claude Code 和 Codex 可以在一个会话里按模型混用多家供应商 — 详见 [4.6 聚合模式](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.6-aggregation.md)
+- **切换只改关键字段**：地址、密钥、模型等关键字段以外的设置原样保留，不再使用通用配置片段 — 详见 [2.3 编辑供应商](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/2-providers/2.3-edit.md)
+- **授权中心**：ChatGPT、GitHub Copilot、xAI 等账号集中在侧栏「授权中心」管理 — 详见 [1.5 个性化配置](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.5-settings.md)
+- **「应用」页**：安装、升级各 CLI 工具，选择侧栏显示哪些应用 — 详见 [1.2 安装指南](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/1-getting-started/1.2-installation.md)
+- 完整变化见 [v4.0 发布说明](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/release-notes/v4.0.4-zh.md)
 
 ## 贡献
 

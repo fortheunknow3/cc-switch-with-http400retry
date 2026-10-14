@@ -1,6 +1,6 @@
 <div align="center">
 
-# CC Switch
+# CC Switch with HTTP 400 Retry
 
 ### The All-in-One Manager for Claude Code, Claude Desktop, Codex, Gemini CLI, Grok Build, OpenCode, OpenClaw, Hermes Agent, Pi & MiniMax Code
 
@@ -16,11 +16,25 @@
 
 ### 🌐 The Only Official Website: **[ccswitch.io](https://ccswitch.io)**
 
-English | [中文](README_ZH.md) | [日本語](README_JA.md) | [Deutsch](README_DE.md) | [Changelog](CHANGELOG.md)
+English | [中文](README_ZH.md) | [日本語](README_JA.md) | [Deutsch](README_DE.md) | [Changelog](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CHANGELOG.md)
 
 **[Download](#download--installation) · [Quick Start](#quick-start) · [Features](#features) · [FAQ](#faq) · [User Manual](docs/user-manual/en/README.md)**
 
 </div>
+
+## HTTP 400 retries in this fork
+
+This fork adds configurable HTTP 400 retries to the local router. Open **Settings → Routing → HTTP 400 auto retry**, enable the switch, choose the maximum additional retries, and save.
+
+- Disabled by default; the default retry count is **3**.
+- Supports **0–10 additional retries** per client request; **0** disables retries.
+- Retries the same provider with increasing delays from **0.5 seconds** up to **5 seconds**.
+- The retry budget is shared across provider failover and request repairs. Existing repairs and failover attempts are counted separately.
+- Settings persist locally and apply to new requests. A single provider works without enabling automatic failover.
+
+Run the feature tests with `pnpm test:unit -- tests/components/Http400RetryConfigPanel.test.tsx` and `cargo test --manifest-path src-tauri/Cargo.toml --lib http400`. For backend tests, set `CC_SWITCH_TEST_HOME` to a temporary directory to isolate your configuration.
+
+Only README Markdown documents are tracked in this repository. Links to other upstream documents refer to their original source.
 
 ## ❤️Sponsor
 
@@ -323,22 +337,22 @@ For detailed guides on every feature, check out the **[User Manual](docs/user-ma
 
 ## Features
 
-[Full Changelog](CHANGELOG.md) | [v4.0 Release Notes](docs/release-notes/v4.0.4-en.md)
+[Full Changelog](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CHANGELOG.md) | [v4.0 Release Notes](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/release-notes/v4.0.4-en.md)
 
 ### Supported Features by Tool
 
-| Tool | Providers | Local Routing | Aggregation | Tray Switching | MCP | Skills | Prompts | Sessions | Usage Stats |
-| --- | --- | :---: | :---: | :---: | :---: | :---: | --- | :---: | :---: |
-| Claude Code | Switch | ✓ | ✓ | ✓ | ✓ | ✓ | CLAUDE.md | ✓ | ✓ |
-| Claude Desktop | Switch | Model Mapping only | – | ✓ | – | – | – | – | Model Mapping only |
-| Codex | Switch | ✓ | ✓ | ✓ | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
-| Gemini CLI | Switch | ✓ | – | ✓ | ✓ | ✓ | GEMINI.md | ✓ | ✓ |
-| Grok Build | Switch | ✓ | – | ✓ | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
-| OpenCode | Coexist | – | – | – | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
-| OpenClaw | Coexist | – | – | – | – | – | Workspace editor | ✓ | – |
-| Hermes | Coexist | – | – | – | ✓ | ✓ | Memory | ✓ | – |
-| Pi | Coexist | – | – | – | ✓ | ✓ | AGENTS.md, SYSTEM.md, prompt templates | ✓ | ✓ |
-| MiniMax Code | Coexist | – | – | – | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
+| Tool           | Providers |   Local Routing    | Aggregation | Tray Switching | MCP | Skills | Prompts                                | Sessions |    Usage Stats     |
+| -------------- | --------- | :----------------: | :---------: | :------------: | :-: | :----: | -------------------------------------- | :------: | :----------------: |
+| Claude Code    | Switch    |         ✓          |      ✓      |       ✓        |  ✓  |   ✓    | CLAUDE.md                              |    ✓     |         ✓          |
+| Claude Desktop | Switch    | Model Mapping only |      –      |       ✓        |  –  |   –    | –                                      |    –     | Model Mapping only |
+| Codex          | Switch    |         ✓          |      ✓      |       ✓        |  ✓  |   ✓    | AGENTS.md                              |    ✓     |         ✓          |
+| Gemini CLI     | Switch    |         ✓          |      –      |       ✓        |  ✓  |   ✓    | GEMINI.md                              |    ✓     |         ✓          |
+| Grok Build     | Switch    |         ✓          |      –      |       ✓        |  ✓  |   ✓    | AGENTS.md                              |    ✓     |         ✓          |
+| OpenCode       | Coexist   |         –          |      –      |       –        |  ✓  |   ✓    | AGENTS.md                              |    ✓     |         ✓          |
+| OpenClaw       | Coexist   |         –          |      –      |       –        |  –  |   –    | Workspace editor                       |    ✓     |         –          |
+| Hermes         | Coexist   |         –          |      –      |       –        |  ✓  |   ✓    | Memory                                 |    ✓     |         –          |
+| Pi             | Coexist   |         –          |      –      |       –        |  ✓  |   ✓    | AGENTS.md, SYSTEM.md, prompt templates |    ✓     |         ✓          |
+| MiniMax Code   | Coexist   |         –          |      –      |       –        |  ✓  |   ✓    | AGENTS.md                              |    ✓     |         ✓          |
 
 - **Switch**: only one provider is active at a time; **Coexist**: multiple providers are written into the tool's own config at the same time, and you pick one inside the tool.
 - **Local Routing**: CC Switch forwards requests on your machine and converts API formats; see [Local Routing & Failover](#local-routing--failover) below. Claude Desktop providers can use "Direct" or "Model Mapping"; with "Model Mapping", requests go through local routing.
@@ -365,7 +379,7 @@ For detailed guides on every feature, check out the **[User Manual](docs/user-ma
 - **Rectifier** — Automatically fixes certain requests that some upstreams can't handle (e.g. Thinking signatures, or falling back when images aren't supported)
 - Official providers (e.g. Claude Official) can't go through local routing (except Codex's OpenAI Official)
 - The routing service's status, listen address, and failover settings are all in "Settings → Local routing"
-- Guides: [Using GPT in Claude Code](docs/guides/claude-codex-routing-guide-en.md) · [Using Claude in Codex](docs/guides/codex-claude-routing-guide-en.md)
+- Guides: [Using GPT in Claude Code](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/claude-codex-routing-guide-en.md) · [Using Claude in Codex](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/codex-claude-routing-guide-en.md)
 
 ### Aggregation Mode
 
@@ -373,7 +387,7 @@ For detailed guides on every feature, check out the **[User Manual](docs/user-ma
 - **Add and remove anytime** — Click "Add" or "Remove" on a provider card, then pick one provider as the default; requests that don't name an aggregated model go to it. Codex's OpenAI Official can only be the default provider; Claude official subscriptions are currently unsupported in Aggregation
 - **Notes** — Aggregation doesn't provide failover; Claude Code requires version 2.1.243 or later; Codex needs a restart after the aggregated list changes, while Claude Code doesn't. When you switch models within a session, the new model has to rebuild its prompt cache, so the first turn costs a bit more
 - Much of Aggregation mode's design draws on [opencodex](https://github.com/lidge-jun/opencodex) — thanks to its author and contributors
-- Documentation: [Aggregation mode manual](docs/user-manual/en/4-proxy/4.6-aggregation.md) · [Illustrated guide (Chinese)](docs/guides/aggregation-mode-guide-zh.md)
+- Documentation: [Aggregation mode manual](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.6-aggregation.md) · [Illustrated guide (Chinese)](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/aggregation-mode-guide-zh.md)
 
 ### MCP, Prompts & Skills
 
@@ -494,7 +508,7 @@ In Routing mode, switching changes the provider that routing uses; the provider 
 
 Yes, but you need to use Routing. When editing the provider, set "Upstream Format" under "Advanced Options" to match the provider's API: choose "OpenAI Chat Completions" for services that only offer a Chat Completions endpoint (as many local model servers do), "OpenAI Responses API" for services that offer a Responses endpoint, and "Gemini Native generateContent" for Gemini. Then click "Start routing" on the "Routing" tab of the Claude Code page. Choosing the wrong format or not starting routing usually results in a 404 or 405 error.
 
-Conversely, choosing "Anthropic Messages" as the "Upstream Format" in Codex or Grok Build lets you use Claude-format providers; this also requires Routing. See [Using GPT in Claude Code](docs/guides/claude-codex-routing-guide-en.md) and [Using Claude in Codex](docs/guides/codex-claude-routing-guide-en.md) for details.
+Conversely, choosing "Anthropic Messages" as the "Upstream Format" in Codex or Grok Build lets you use Claude-format providers; this also requires Routing. See [Using GPT in Claude Code](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/claude-codex-routing-guide-en.md) and [Using Claude in Codex](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/codex-claude-routing-guide-en.md) for details.
 
 </details>
 
@@ -555,13 +569,13 @@ If you launch from a desktop icon, add it to the `.desktop` `Exec=` line (e.g. `
 
 </details>
 
-For more questions, see the [FAQ](docs/user-manual/en/5-faq/5.2-questions.md) in the User Manual.
+For more questions, see the [FAQ](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/5-faq/5.2-questions.md) in the User Manual.
 
 ## Contributing
 
 Issues and suggestions are welcome! Before developing a new feature, please open an issue to discuss the approach first; feature PRs that aren't a good fit for the project may be closed.
 
-For development setup, pre-submit checks, and architecture notes, see [CONTRIBUTING.md](CONTRIBUTING.md); for usage questions, check [SUPPORT.md](SUPPORT.md) first; report security vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
+For development setup, pre-submit checks, and architecture notes, see [CONTRIBUTING.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CONTRIBUTING.md); for usage questions, check [SUPPORT.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/SUPPORT.md) first; report security vulnerabilities privately as described in [SECURITY.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/SECURITY.md).
 
 **Tech stack**: Tauri 2 · Rust · React 18 · TypeScript · SQLite
 

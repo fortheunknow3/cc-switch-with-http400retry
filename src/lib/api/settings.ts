@@ -321,6 +321,14 @@ export const settingsApi = {
     return await invoke("list_tool_installations", { tools });
   },
 
+  async getHttp400RetryConfig(): Promise<Http400RetryConfig> {
+    return await invoke("get_http400_retry_config");
+  },
+
+  async setHttp400RetryConfig(config: Http400RetryConfig): Promise<boolean> {
+    return await invoke("set_http400_retry_config", { config });
+  },
+
   async getRectifierConfig(): Promise<RectifierConfig> {
     return await invoke("get_rectifier_config");
   },
@@ -389,6 +397,11 @@ export interface ToolInstallationReport {
   anchored: boolean;
   /** 默认那处是认不出安装渠道的原生可执行文件：不执行升级，command 为空。 */
   unmanaged: boolean;
+}
+
+export interface Http400RetryConfig {
+  enabled: boolean;
+  maxRetries: number;
 }
 
 export interface RectifierConfig {

@@ -50,61 +50,61 @@
 
 | File | Description |
 |------|-------------|
-| [1.1-introduction.md](./1-getting-started/1.1-introduction.md) | Introduction, core features, supported platforms |
-| [1.2-installation.md](./1-getting-started/1.2-installation.md) | Windows/macOS/Linux installation guide |
-| [1.3-interface.md](./1-getting-started/1.3-interface.md) | Sidebar layout, connection mode tabs, provider cards |
-| [1.4-quickstart.md](./1-getting-started/1.4-quickstart.md) | 5-minute quick start tutorial |
-| [1.5-settings.md](./1-getting-started/1.5-settings.md) | The six Settings groups: General, App config, Local routing, Network, Data, About |
+| [1.1-introduction.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.1-introduction.md) | Introduction, core features, supported platforms |
+| [1.2-installation.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.2-installation.md) | Windows/macOS/Linux installation guide |
+| [1.3-interface.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.3-interface.md) | Sidebar layout, connection mode tabs, provider cards |
+| [1.4-quickstart.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.4-quickstart.md) | 5-minute quick start tutorial |
+| [1.5-settings.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.5-settings.md) | The six Settings groups: General, App config, Local routing, Network, Data, About |
 
 ### 2. Provider Management
 
 | File | Description |
 |------|-------------|
-| [2.1-add.md](./2-providers/2.1-add.md) | Using presets, custom configuration, universal providers |
-| [2.2-switch.md](./2-providers/2.2-switch.md) | Direct / Routing / Aggregation, tray switching, activation methods |
-| [2.3-edit.md](./2-providers/2.3-edit.md) | Edit configuration, modify API Key, global settings and edit conflicts |
-| [2.4-sort-duplicate.md](./2-providers/2.4-sort-duplicate.md) | Drag-to-reorder, duplicate provider, delete |
-| [2.5-usage-query.md](./2-providers/2.5-usage-query.md) | Usage query, remaining balance, multi-plan display |
-| [2.6-claude-desktop.md](./2-providers/2.6-claude-desktop.md) | Claude Desktop third-party providers, direct mode, and model mapping |
+| [2.1-add.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.1-add.md) | Using presets, custom configuration, universal providers |
+| [2.2-switch.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.2-switch.md) | Direct / Routing / Aggregation, tray switching, activation methods |
+| [2.3-edit.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.3-edit.md) | Edit configuration, modify API Key, global settings and edit conflicts |
+| [2.4-sort-duplicate.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.4-sort-duplicate.md) | Drag-to-reorder, duplicate provider, delete |
+| [2.5-usage-query.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.5-usage-query.md) | Usage query, remaining balance, multi-plan display |
+| [2.6-claude-desktop.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.6-claude-desktop.md) | Claude Desktop third-party providers, direct mode, and model mapping |
 
 ### 3. Extensions
 
 | File | Description |
 |------|-------------|
-| [3.1-mcp.md](./3-extensions/3.1-mcp.md) | MCP protocol, add servers, app binding |
-| [3.2-prompts.md](./3-extensions/3.2-prompts.md) | Create prompts, enable/switch, target files |
-| [3.3-skills.md](./3-extensions/3.3-skills.md) | Discover skills, install/uninstall, repository management |
-| [3.4-sessions.md](./3-extensions/3.4-sessions.md) | Session Manager: browse, search, resume, delete sessions |
-| [3.5-workspace.md](./3-extensions/3.5-workspace.md) | Workspace files and daily memory (OpenClaw) |
+| [3.1-mcp.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/3-extensions/3.1-mcp.md) | MCP protocol, add servers, app binding |
+| [3.2-prompts.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/3-extensions/3.2-prompts.md) | Create prompts, enable/switch, target files |
+| [3.3-skills.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/3-extensions/3.3-skills.md) | Discover skills, install/uninstall, repository management |
+| [3.4-sessions.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/3-extensions/3.4-sessions.md) | Session Manager: browse, search, resume, delete sessions |
+| [3.5-workspace.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/3-extensions/3.5-workspace.md) | Workspace files and daily memory (OpenClaw) |
 
 ### 4. Local Routing & High Availability
 
 | File | Description |
 |------|-------------|
-| [4.1-service.md](./4-proxy/4.1-service.md) | Start local routing, configuration, API format conversion |
-| [4.2-routing.md](./4-proxy/4.2-routing.md) | App routing, configuration changes, status indicators |
-| [4.3-failover.md](./4-proxy/4.3-failover.md) | Failover queue, circuit breaker, health status |
-| [4.4-usage.md](./4-proxy/4.4-usage.md) | Usage statistics, trend charts, pricing configuration |
-| [4.5-model-test.md](./4-proxy/4.5-model-test.md) | Connectivity check, check parameters |
-| [4.6-aggregation.md](./4-proxy/4.6-aggregation.md) | Aggregation mode, default provider, `ccs-` prefix, Codex restart |
+| [4.1-service.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.1-service.md) | Start local routing, configuration, API format conversion |
+| [4.2-routing.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.2-routing.md) | App routing, configuration changes, status indicators |
+| [4.3-failover.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.3-failover.md) | Failover queue, circuit breaker, health status |
+| [4.4-usage.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.4-usage.md) | Usage statistics, trend charts, pricing configuration |
+| [4.5-model-test.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.5-model-test.md) | Connectivity check, check parameters |
+| [4.6-aggregation.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.6-aggregation.md) | Aggregation mode, default provider, `ccs-` prefix, Codex restart |
 
 ### 5. FAQ
 
 | File | Description |
 |------|-------------|
-| [5.1-config-files.md](./5-faq/5.1-config-files.md) | CC Switch storage, CLI configuration file formats |
-| [5.2-questions.md](./5-faq/5.2-questions.md) | Frequently asked questions |
-| [5.3-deeplink.md](./5-faq/5.3-deeplink.md) | Deep link protocol, generation and usage |
-| [5.4-env-conflict.md](./5-faq/5.4-env-conflict.md) | Environment variable conflict detection and resolution |
+| [5.1-config-files.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/5-faq/5.1-config-files.md) | CC Switch storage, CLI configuration file formats |
+| [5.2-questions.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/5-faq/5.2-questions.md) | Frequently asked questions |
+| [5.3-deeplink.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/5-faq/5.3-deeplink.md) | Deep link protocol, generation and usage |
+| [5.4-env-conflict.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/5-faq/5.4-env-conflict.md) | Environment variable conflict detection and resolution |
 
 ## Quick Links
 
-- **New users**: Start with [1.1 Introduction](./1-getting-started/1.1-introduction.md)
-- **Installation issues**: See [1.2 Installation Guide](./1-getting-started/1.2-installation.md)
-- **Configure providers**: See [2.1 Add Provider](./2-providers/2.1-add.md)
-- **Use Claude Desktop**: See [2.6 Claude Desktop](./2-providers/2.6-claude-desktop.md)
-- **Use local routing**: See [4.1 Local Routing Service](./4-proxy/4.1-service.md)
-- **Having trouble**: See [5.2 FAQ](./5-faq/5.2-questions.md)
+- **New users**: Start with [1.1 Introduction](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.1-introduction.md)
+- **Installation issues**: See [1.2 Installation Guide](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.2-installation.md)
+- **Configure providers**: See [2.1 Add Provider](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.1-add.md)
+- **Use Claude Desktop**: See [2.6 Claude Desktop](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.6-claude-desktop.md)
+- **Use local routing**: See [4.1 Local Routing Service](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.1-service.md)
+- **Having trouble**: See [5.2 FAQ](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/5-faq/5.2-questions.md)
 
 ## Version Information
 
@@ -114,13 +114,13 @@
 
 ### Recent Major Changes (v4.0)
 
-- **Redesigned interface**: the top navigation is replaced by a left sidebar, with separate pages for Usage, Accounts, MCP, Skills, Prompts, Sessions, and Apps; Settings is split into six groups: General, App config, Local routing, Network, Data, About — see [1.3 Interface Overview](./1-getting-started/1.3-interface.md) and [1.5 Personalization](./1-getting-started/1.5-settings.md)
-- **Three connection modes: Direct / Routing / Aggregation**: chosen at the top of each app page; going back to direct is one step — see [2.2 Switch Provider](./2-providers/2.2-switch.md)
-- **New Aggregation mode**: Claude Code and Codex can mix models from several providers in one session — see [4.6 Aggregation Mode](./4-proxy/4.6-aggregation.md)
-- **Switching only changes key fields**: everything other than the address, key, model, and other key fields is left as is; common config snippets are no longer used — see [2.3 Edit Provider](./2-providers/2.3-edit.md)
-- **Accounts**: ChatGPT, GitHub Copilot, xAI, and other sign-ins are managed in one place under **Accounts** in the sidebar — see [1.5 Personalization](./1-getting-started/1.5-settings.md)
-- **Apps page**: install and upgrade each CLI tool, and choose which apps show in the sidebar — see [1.2 Installation Guide](./1-getting-started/1.2-installation.md)
-- For the full list of changes, see the [v4.0 release notes](../../release-notes/v4.0.4-en.md)
+- **Redesigned interface**: the top navigation is replaced by a left sidebar, with separate pages for Usage, Accounts, MCP, Skills, Prompts, Sessions, and Apps; Settings is split into six groups: General, App config, Local routing, Network, Data, About — see [1.3 Interface Overview](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.3-interface.md) and [1.5 Personalization](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.5-settings.md)
+- **Three connection modes: Direct / Routing / Aggregation**: chosen at the top of each app page; going back to direct is one step — see [2.2 Switch Provider](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.2-switch.md)
+- **New Aggregation mode**: Claude Code and Codex can mix models from several providers in one session — see [4.6 Aggregation Mode](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/4-proxy/4.6-aggregation.md)
+- **Switching only changes key fields**: everything other than the address, key, model, and other key fields is left as is; common config snippets are no longer used — see [2.3 Edit Provider](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/2-providers/2.3-edit.md)
+- **Accounts**: ChatGPT, GitHub Copilot, xAI, and other sign-ins are managed in one place under **Accounts** in the sidebar — see [1.5 Personalization](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.5-settings.md)
+- **Apps page**: install and upgrade each CLI tool, and choose which apps show in the sidebar — see [1.2 Installation Guide](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/en/1-getting-started/1.2-installation.md)
+- For the full list of changes, see the [v4.0 release notes](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/release-notes/v4.0.4-en.md)
 
 ## Contributing
 

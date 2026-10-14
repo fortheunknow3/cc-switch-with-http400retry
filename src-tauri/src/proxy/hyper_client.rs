@@ -869,6 +869,9 @@ mod tests {
                 }
                 written.fetch_add(n, Ordering::SeqCst);
                 remaining -= n;
+                // 给客户端处理每个分块和取消连接的机会。Windows loopback 可以在
+                // 客户端读到预算上限前缓冲数 MiB，紧密写循环会让取消断言依赖 OS 缓冲大小。
+                tokio::time::sleep(std::time::Duration::from_millis(1)).await;
             }
         });
 

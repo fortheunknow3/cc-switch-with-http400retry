@@ -24,6 +24,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { AutoFailoverConfigPanel } from "@/components/proxy/AutoFailoverConfigPanel";
 import { RectifierConfigPanel } from "@/components/settings/RectifierConfigPanel";
+import { Http400RetryConfigPanel } from "@/components/settings/Http400RetryConfigPanel";
 import { APP_DISPLAY_NAME, AppGlyph } from "@/components/shell/AppGlyph";
 import { MODE_TONE } from "@/components/providers/mode/ModeTabs";
 import {
@@ -453,6 +454,12 @@ export function RoutingSection({ onOpenApp }: RoutingSectionProps) {
             }))}
           />
           <AutoFailoverConfigPanel key={failoverApp} appType={failoverApp} />
+        </div>
+      </SettingsBlock>
+
+      <SettingsBlock title={t("http400Retry.title")}>
+        <div className="rounded-panel border border-border bg-surface p-5">
+          <Http400RetryConfigPanel />
         </div>
       </SettingsBlock>
 

@@ -703,6 +703,28 @@ pub async fn get_auto_launch_status() -> Result<bool, String> {
     crate::auto_launch::is_auto_launch_enabled().map_err(|e| format!("获取开机自启状态失败: {e}"))
 }
 
+#[tauri::command]
+pub async fn get_http400_retry_config(
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<crate::proxy::types::Http400RetryConfig, String> {
+    state
+        .db
+        .get_http400_retry_config()
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn set_http400_retry_config(
+    state: tauri::State<'_, crate::AppState>,
+    config: crate::proxy::types::Http400RetryConfig,
+) -> Result<bool, String> {
+    state
+        .db
+        .set_http400_retry_config(&config)
+        .map_err(|e| e.to_string())?;
+    Ok(true)
+}
+
 /// 获取整流器配置
 #[tauri::command]
 pub async fn get_rectifier_config(

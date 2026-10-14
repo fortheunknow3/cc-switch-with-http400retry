@@ -1,4 +1,15 @@
 {
+  "http400Retry": {
+    "title": "HTTP 400 auto retry",
+    "enabled": "Enable HTTP 400 auto retry",
+    "description": "Applies to all apps in local Routing mode. Resends requests to the same provider after HTTP 400, with increasing delays up to 5 seconds. Saved changes apply to new requests.",
+    "maxRetries": "Maximum additional retries",
+    "hint": "0–10, excluding the first attempt. Set 3 for up to 3 additional retries, or 0 for no retries. Existing request repairs and provider failover are counted separately.",
+    "invalidMaxRetries": "Maximum retries must be an integer from 0 to 10",
+    "saved": "HTTP 400 retry settings saved",
+    "saveFailed": "Failed to save HTTP 400 retry settings",
+    "loadFailed": "Failed to load settings. Reopen this page to try again"
+  },
   "app": {
     "title": "CC Switch",
     "description": "All-in-One Assistant for Claude Code, Codex & Gemini CLI"

@@ -1,6 +1,6 @@
 <div align="center">
 
-# CC Switch
+# CC Switch HTTP 400 自动重试版
 
 ### Claude Code、Claude Desktop、Codex、Gemini CLI、Grok Build、OpenCode、OpenClaw、Hermes Agent、Pi、MiniMax Code 的全方位管理工具
 
@@ -16,11 +16,25 @@
 
 ### 🌐 唯一官方网站：**[ccswitch.io](https://ccswitch.io)**
 
-[English](README.md) | 中文 | [日本語](README_JA.md) | [Deutsch](README_DE.md) | [更新日志](CHANGELOG.md)
+[English](README.md) | 中文 | [日本語](README_JA.md) | [Deutsch](README_DE.md) | [更新日志](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CHANGELOG.md)
 
 **[下载安装](#下载安装) · [快速开始](#快速开始) · [功能特性](#功能特性) · [常见问题](#常见问题) · [用户手册](docs/user-manual/zh/README.md)**
 
 </div>
+
+## HTTP 400 自动重试
+
+本分支为本地路由增加了可配置的 HTTP 400 自动重试。在 **设置 → 路由 → HTTP 400 自动重试** 中开启开关，填写最大额外重试次数并保存。
+
+- 默认关闭，默认最多额外重试 **3** 次。
+- 支持每个客户端请求额外重试 **0–10** 次；**0** 表示不重试。
+- 向同一供应商重发请求，等待间隔从 **0.5 秒** 逐步增加至最多 **5 秒**。
+- 供应商切换或请求修复不会重置 HTTP 400 重试额度；原有请求修复和故障转移的尝试独立计数。
+- 设置持久保存，对新请求生效。只有一个供应商、未开启自动故障转移时也可使用。
+
+前端功能测试：`pnpm test:unit -- tests/components/Http400RetryConfigPanel.test.tsx`。后端功能测试：`cargo test --manifest-path src-tauri/Cargo.toml --lib http400`。运行后端测试前，请将 `CC_SWITCH_TEST_HOME` 设为临时目录以隔离个人配置。
+
+本仓库仅跟踪 README 类 Markdown 文档；其他上游文档的链接指向原项目中的对应文件。
 
 ## ❤️赞助商
 
@@ -324,22 +338,22 @@ paru -S cc-switch-bin
 
 ## 功能特性
 
-[完整更新日志](CHANGELOG.md) | [v4.0 发布说明](docs/release-notes/v4.0.4-zh.md)
+[完整更新日志](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CHANGELOG.md) | [v4.0 发布说明](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/release-notes/v4.0.4-zh.md)
 
 ### 各工具支持的功能
 
-| 工具 | 供应商 | 本地路由 | 聚合 | 托盘切换 | MCP | Skills | 提示词 | 会话 | 用量统计 |
-| --- | --- | :---: | :---: | :---: | :---: | :---: | --- | :---: | :---: |
-| Claude Code | 切换 | ✓ | ✓ | ✓ | ✓ | ✓ | CLAUDE.md | ✓ | ✓ |
-| Claude Desktop | 切换 | 模型映射时 | – | ✓ | – | – | – | – | 模型映射时 |
-| Codex | 切换 | ✓ | ✓ | ✓ | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
-| Gemini CLI | 切换 | ✓ | – | ✓ | ✓ | ✓ | GEMINI.md | ✓ | ✓ |
-| Grok Build | 切换 | ✓ | – | ✓ | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
-| OpenCode | 共存 | – | – | – | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
-| OpenClaw | 共存 | – | – | – | – | – | 工作区编辑器 | ✓ | – |
-| Hermes | 共存 | – | – | – | ✓ | ✓ | 记忆管理 | ✓ | – |
-| Pi | 共存 | – | – | – | ✓ | ✓ | AGENTS.md、SYSTEM.md、提示词模板 | ✓ | ✓ |
-| MiniMax Code | 共存 | – | – | – | ✓ | ✓ | AGENTS.md | ✓ | ✓ |
+| 工具           | 供应商 |  本地路由  | 聚合 | 托盘切换 | MCP | Skills | 提示词                           | 会话 |  用量统计  |
+| -------------- | ------ | :--------: | :--: | :------: | :-: | :----: | -------------------------------- | :--: | :--------: |
+| Claude Code    | 切换   |     ✓      |  ✓   |    ✓     |  ✓  |   ✓    | CLAUDE.md                        |  ✓   |     ✓      |
+| Claude Desktop | 切换   | 模型映射时 |  –   |    ✓     |  –  |   –    | –                                |  –   | 模型映射时 |
+| Codex          | 切换   |     ✓      |  ✓   |    ✓     |  ✓  |   ✓    | AGENTS.md                        |  ✓   |     ✓      |
+| Gemini CLI     | 切换   |     ✓      |  –   |    ✓     |  ✓  |   ✓    | GEMINI.md                        |  ✓   |     ✓      |
+| Grok Build     | 切换   |     ✓      |  –   |    ✓     |  ✓  |   ✓    | AGENTS.md                        |  ✓   |     ✓      |
+| OpenCode       | 共存   |     –      |  –   |    –     |  ✓  |   ✓    | AGENTS.md                        |  ✓   |     ✓      |
+| OpenClaw       | 共存   |     –      |  –   |    –     |  –  |   –    | 工作区编辑器                     |  ✓   |     –      |
+| Hermes         | 共存   |     –      |  –   |    –     |  ✓  |   ✓    | 记忆管理                         |  ✓   |     –      |
+| Pi             | 共存   |     –      |  –   |    –     |  ✓  |   ✓    | AGENTS.md、SYSTEM.md、提示词模板 |  ✓   |     ✓      |
+| MiniMax Code   | 共存   |     –      |  –   |    –     |  ✓  |   ✓    | AGENTS.md                        |  ✓   |     ✓      |
 
 - **切换**：同一时间只启用一个供应商；**共存**：多个供应商同时写入工具自身的配置，在工具里选择使用。
 - **本地路由**：由 CC Switch 在本机转发请求并转换接口格式，见下方[本地路由与故障转移](#本地路由与故障转移)。Claude Desktop 的供应商可选“直连”或“模型映射”，选“模型映射”时经本地路由转发。
@@ -366,7 +380,7 @@ paru -S cc-switch-bin
 - **整流器** — 自动修正部分上游不兼容的请求（如 Thinking 签名、不支持图片时降级）
 - 官方供应商（如 Claude Official）不能走本地路由（Codex 的 OpenAI Official 除外）
 - 路由服务的状态、监听地址和故障转移参数集中在「设置 → 本地路由」
-- 使用攻略：[在 Claude Code 中使用 GPT](docs/guides/claude-codex-routing-guide-zh.md) · [在 Codex 中使用 Claude](docs/guides/codex-claude-routing-guide-zh.md)
+- 使用攻略：[在 Claude Code 中使用 GPT](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/claude-codex-routing-guide-zh.md) · [在 Codex 中使用 Claude](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/codex-claude-routing-guide-zh.md)
 
 ### 聚合模式
 
@@ -374,7 +388,7 @@ paru -S cc-switch-bin
 - **随时添加和移除** — 在供应商卡片上点“添加”或“移除”，再选一家作为默认供应商，没有指定聚合模型的请求都交给它；Codex 的 OpenAI Official 只能作为默认供应商；聚合模式暂不支持 Claude 官方订阅
 - **注意** — 聚合不提供故障转移；Claude Code 需要 2.1.243 或更新版本；Codex 的聚合列表变化后需要重启，Claude Code 不需要。同一会话里换模型后，新模型要重新建立提示词缓存，第一轮费用会高一些
 - 聚合模式的许多设计参考了 [opencodex](https://github.com/lidge-jun/opencodex)，感谢作者和贡献者
-- 使用攻略：[聚合模式图文指南](docs/guides/aggregation-mode-guide-zh.md) · [聚合模式手册](docs/user-manual/zh/4-proxy/4.6-aggregation.md)
+- 使用攻略：[聚合模式图文指南](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/aggregation-mode-guide-zh.md) · [聚合模式手册](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/4-proxy/4.6-aggregation.md)
 
 ### MCP、提示词与 Skills
 
@@ -495,7 +509,7 @@ Codex 还可以在 CC Switch 里用“使用 ChatGPT 登录”登录多个 ChatG
 
 可以，但需要使用路由。编辑供应商时，在“高级选项”的“上游格式”里选择和供应商一致的接口格式：只提供 Chat Completions 接口的服务（很多本地模型服务都是这样）选“OpenAI Chat Completions”，提供 Responses 接口的选“OpenAI Responses API”，Gemini 选“Gemini Native generateContent”。然后在 Claude Code 页面的「路由」标签里点“开始路由”。格式选错或没有开始路由，通常会报 404 或 405 错误。
 
-反过来，在 Codex 或 Grok Build 的“上游格式”里选“Anthropic Messages”，就能使用 Claude 格式的供应商，同样需要路由。详见[在 Claude Code 中使用 GPT](docs/guides/claude-codex-routing-guide-zh.md) 和 [在 Codex 中使用 Claude](docs/guides/codex-claude-routing-guide-zh.md)。
+反过来，在 Codex 或 Grok Build 的“上游格式”里选“Anthropic Messages”，就能使用 Claude 格式的供应商，同样需要路由。详见[在 Claude Code 中使用 GPT](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/claude-codex-routing-guide-zh.md) 和 [在 Codex 中使用 Claude](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/guides/codex-claude-routing-guide-zh.md)。
 
 </details>
 
@@ -556,13 +570,13 @@ CC_SWITCH_GDK_BACKEND=wayland ./CC-Switch-*.AppImage
 
 </details>
 
-更多问题请查看用户手册中的[常见问题](docs/user-manual/zh/5-faq/5.2-questions.md)。
+更多问题请查看用户手册中的[常见问题](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/docs/user-manual/zh/5-faq/5.2-questions.md)。
 
 ## 贡献
 
 欢迎提交 Issue 反馈问题和建议！新功能开发前，请先开 Issue 讨论实现方案，不适合项目的功能性 PR 有可能会被关闭。
 
-开发环境、提交前检查和架构说明见 [CONTRIBUTING.md](CONTRIBUTING.md#贡献指南)；使用问题请先看 [SUPPORT.md](SUPPORT.md)；安全漏洞请按 [SECURITY.md](SECURITY.md) 私下报告。
+开发环境、提交前检查和架构说明见 [CONTRIBUTING.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/CONTRIBUTING.md#贡献指南)；使用问题请先看 [SUPPORT.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/SUPPORT.md)；安全漏洞请按 [SECURITY.md](https://github.com/farion1231/cc-switch/blob/51ac86f1c59abfefabadebd05ec5a5415b8ad72c/SECURITY.md) 私下报告。
 
 **技术栈**：Tauri 2 · Rust · React 18 · TypeScript · SQLite
 

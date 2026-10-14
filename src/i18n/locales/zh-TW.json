@@ -1,4 +1,15 @@
 {
+  "http400Retry": {
+    "title": "HTTP 400 自動重試",
+    "enabled": "啟用 HTTP 400 自動重試",
+    "description": "適用於本機路由模式的所有應用程式。收到 HTTP 400 時，等待後向同一供應商重新傳送請求，等待間隔逐步增加至最多 5 秒。儲存後對新請求生效。",
+    "maxRetries": "最大額外重試次數",
+    "hint": "範圍 0–10，不含首次請求。設為 3 表示失敗後最多額外重試 3 次；0 表示不重試。原有請求修復與供應商容錯移轉獨立計數。",
+    "invalidMaxRetries": "最大重試次數必須為 0–10 之間的整數",
+    "saved": "HTTP 400 重試設定已儲存",
+    "saveFailed": "儲存 HTTP 400 重試設定失敗",
+    "loadFailed": "載入設定失敗，請重新開啟此頁面"
+  },
   "app": {
     "title": "CC Switch",
     "description": "Claude Code / Codex / Gemini CLI 全方位輔助工具"
